@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>후드실화 8화 WebGL 씬 디자인 검수표</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root {
+  --bg: #EEF2F1; --panel: #FFFFFF; --ink: #1B2624; --muted: #5E6E6A; --line: #D3DDDA;
+  --accent: #2C8C80; --accent-ink: #FFFFFF; --ok: #2F7D45; --warn: #B07A10; --bad: #B9402F;
+  --ok-bg: #E2F1E6; --warn-bg: #F7EDD6; --bad-bg: #F6E1DD; --chip: #E3EAE8;
+  --display: "Do Hyeon", "IBM Plex Sans KR", system-ui, sans-serif;
+  --body: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121817; --panel: #1A2321; --ink: #E6EEEC; --muted: #93A5A0; --line: #2B3835;
+  --accent: #4FB3A6; --accent-ink: #0D1514; --ok: #6CC287; --warn: #E0AE4A; --bad: #EE7F6E;
+  --ok-bg: #1D3326; --warn-bg: #3A2F17; --bad-bg: #3D211D; --chip: #24302D; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121817; --panel: #1A2321; --ink: #E6EEEC; --muted: #93A5A0; --line: #2B3835;
+  --accent: #4FB3A6; --accent-ink: #0D1514; --ok: #6CC287; --warn: #E0AE4A; --bad: #EE7F6E;
+  --ok-bg: #1D3326; --warn-bg: #3A2F17; --bad-bg: #3D211D; --chip: #24302D; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 48px }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 10px 16px }
+h1 { font: 32px/1.1 var(--display); margin: 0; text-wrap: balance }
+.sub { color: var(--muted); margin: 4px 0 0; font-size: 14px }
+.summary { display: flex; gap: 6px; flex-wrap: wrap; align-items: center }
+.pill { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--chip); white-space: nowrap }
+.pill b { font-variant-numeric: tabular-nums }
+.pill.ok { background: var(--ok-bg); color: var(--ok) }
+.pill.warn { background: var(--warn-bg); color: var(--warn) }
+.themeBtn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px;
+  padding: 4px 10px; font: 600 12px var(--body); cursor: pointer }
+.themeBtn:hover { border-color: var(--accent) }
+
+/* Top cut tabs */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 2px }
+.tab { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 10px; padding: 7px 11px;
+  font: 600 13px var(--body); cursor: pointer; white-space: nowrap; display: flex; gap: 6px; align-items: center }
+.tab:hover { border-color: var(--accent) }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+.tab .cid { font: 500 12px var(--mono); opacity: .9 }
+.tab .n { font: 500 11px var(--mono); padding: 1px 6px; border-radius: 999px; background: var(--warn-bg); color: var(--warn) }
+.tab[aria-selected="true"] .n { background: rgba(0,0,0,.22); color: inherit }
+.tab .vdot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid currentColor; flex-shrink: 0 }
+.tab .vdot.ok { background: var(--ok); border-color: var(--ok) }
+.tab .vdot.fix { background: var(--warn); border-color: var(--warn) }
+.tab[aria-selected="true"] .vdot.ok { background: #b9f5cc; border-color: #b9f5cc }
+.tab[aria-selected="true"] .vdot.fix { background: #ffe09a; border-color: #ffe09a }
+
+/* Main 2-column grid */
+.ep { display: grid; grid-template-columns: minmax(0, 316px) minmax(0, 1fr); gap: 20px; align-items: start }
+.rail { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.picker { display: none }
+.sizeBtn { display: none }
+
+/* Sticky 9:16 Player + Frame Controls + Live Subtitle */
+.player { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 8px }
+.screen { aspect-ratio: 9/16; width: 100%; background: #000; border-radius: 14px; overflow: hidden; display: grid; place-items: center; position: relative }
+.screen video { width: 100%; height: 100%; display: block; object-fit: contain }
+.hudBadge { position: absolute; left: 8px; top: 8px; font: 500 11px var(--mono); color: #fff; background: rgba(0,0,0,.62);
+  padding: 2px 7px; border-radius: 6px; pointer-events: none; letter-spacing: .01em }
+.now { font: 500 12px var(--mono); color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 6px }
+.now b { color: var(--ink) }
+.transport { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px }
+.tbtn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 6px 2px;
+  font: 600 12px var(--mono); cursor: pointer; text-align: center; white-space: nowrap }
+.tbtn:hover { border-color: var(--accent) }
+.tbtn.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+.subBox { background: var(--panel); border: 1px solid var(--line); border-radius: 11px; padding: 9px 11px; min-height: 62px; display: grid; gap: 3px }
+.subMeta { font: 500 11px var(--mono); color: var(--muted); display: flex; justify-content: space-between; gap: 6px }
+.subText { font: 500 13px/1.4 var(--body); color: var(--ink); word-break: keep-all }
+.keysHint { font: 500 11px var(--mono); color: var(--muted); text-align: center; line-height: 1.4 }
+
+/* Cards */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; display: grid; gap: 11px; min-width: 0 }
+.title { font: 23px/1.25 var(--display); margin: 0; text-wrap: balance }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 12px; color: var(--muted); font-size: 13px; align-items: center }
+.meta code { font: 500 12px var(--mono); color: var(--ink); background: var(--chip); padding: 1px 6px; border-radius: 6px; word-break: break-all }
+.castRow { display: flex; flex-wrap: wrap; gap: 6px }
+.castChip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--chip); color: var(--ink) }
+.castChip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0 }
+.decide { display: flex; flex-wrap: wrap; gap: 7px; align-items: center }
+.btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 9px; padding: 7px 12px; font: 600 13px var(--body); cursor: pointer }
+.btn:hover { border-color: var(--accent) }
+.btn.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+.btn.v-ok.on { background: var(--ok); border-color: var(--ok); color: var(--panel) }
+.btn.v-fix.on { background: var(--warn); border-color: var(--warn); color: var(--panel) }
+.btn.sm { padding: 4px 9px; font-size: 12px; border-radius: 8px }
+.btn:focus-visible, .tab:focus-visible, .frame:focus-visible, .tbtn:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+
+h3 { font: 600 13px var(--body); letter-spacing: .04em; color: var(--muted); margin: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap }
+
+/* Key-frame strip */
+.strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px }
+.strip.focusCut { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)) }
+.frame { position: relative; border: 2px solid transparent; border-radius: 9px; overflow: hidden; padding: 0; background: var(--chip); cursor: pointer; aspect-ratio: 9/16 }
+.frame img { width: 100%; height: 100%; object-fit: cover; display: block }
+.frame .t { position: absolute; left: 4px; top: 4px; font: 500 10px var(--mono); color: #fff; background: rgba(0,0,0,.64); padding: 1px 5px; border-radius: 5px }
+.frame .dot { position: absolute; right: 5px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 2px #fff }
+.frame.cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) }
+.frame .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 4px 4px; font: 500 11px/1.2 var(--body); color: #fff; text-align: center;
+  word-break: keep-all; background: linear-gradient(transparent, rgba(0,0,0,.82)); text-shadow: 0 1px 2px #000 }
+
+/* Composer & Notes */
+.cats { display: flex; flex-wrap: wrap; gap: 6px }
+.catBtn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 4px 10px; font: 600 12px var(--body); cursor: pointer }
+.catBtn.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+.composer { display: grid; gap: 9px }
+.row { display: flex; gap: 7px; flex-wrap: wrap; align-items: center }
+.tin { width: 82px; font: 500 14px var(--mono); padding: 7px 8px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--ink) }
+.tagMono { font: 500 12px var(--mono); padding: 5px 8px; border-radius: 8px; background: var(--chip); color: var(--ink) }
+textarea { width: 100%; min-height: 68px; resize: vertical; font: 15px/1.5 var(--body); padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink) }
+.syncBar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-top: 4px; border-top: 1px dashed var(--line) }
+.notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px }
+.note { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line) }
+.note.done { opacity: .55 } .note.done .txt { text-decoration: line-through }
+.note .tt { font: 500 12px var(--mono); color: var(--accent); background: var(--chip); border: 0; border-radius: 7px; cursor: pointer; padding: 4px 7px; text-align: left; line-height: 1.35 }
+.note .tt:hover { filter: brightness(.95) }
+.note .cat { display: inline-block; font: 600 11px var(--body); padding: 1px 7px; border-radius: 999px; background: var(--chip); color: var(--muted); margin-bottom: 3px }
+.note .txt { white-space: pre-wrap; word-break: break-word; font-size: 14px }
+.note .acts { display: flex; gap: 5px }
+.note .acts button { font-size: 12px; padding: 4px 8px }
+.empty { color: var(--muted); font-size: 14px; padding: 4px 0 }
+.msg { font-size: 13px; color: var(--muted) } .msg.ok { color: var(--ok) } .msg.err { color: var(--bad) }
+
+/* Checks, Staging, Dialogue, Overview Matrix */
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
+.checks li { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14px }
+.st { font: 600 12px var(--body); text-align: center; border-radius: 6px; padding: 2px 6px }
+.st.ok { background: var(--ok-bg); color: var(--ok) } .st.warn { background: var(--warn-bg); color: var(--warn) } .st.bad { background: var(--bad-bg); color: var(--bad) }
+.checks .what { font-weight: 600 } .checks .why { color: var(--muted) }
+.bullets { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px }
+.dialogList { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px }
+.dialogBtn { width: 100%; text-align: left; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 9px;
+  padding: 7px 10px; cursor: pointer; display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 8px; align-items: baseline; font: 400 13px/1.45 var(--body) }
+.dialogBtn:hover { border-color: var(--accent) }
+.dialogBtn.active { border-color: var(--accent); background: var(--chip) }
+.dialogBtn .dt { font: 500 12px var(--mono); color: var(--accent) }
+.cutMatrix { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
+.cutRow { width: 100%; text-align: left; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 10px;
+  padding: 9px 11px; cursor: pointer; display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; gap: 10px; align-items: center; font: 400 13px var(--body) }
+.cutRow:hover { border-color: var(--accent) }
+.cutRow .idTag { font: 600 12px var(--mono); color: var(--accent) }
+.cutRow .subLine { color: var(--muted); font-size: 12px }
+
+/* Toast */
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--panel);
+  padding: 9px 15px; border-radius: 999px; font: 600 13px var(--body); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 40; max-width: 92vw; text-align: center }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0) }
+
+/* Phone layout (<= 760px) */
+@media (max-width: 760px) {
+  body { --gutter: max(16px, env(safe-area-inset-left, 0px)); padding-top: 10px; padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px)) }
+  .wrap { gap: 10px }
+  header { flex-wrap: wrap; align-items: center; gap: 6px 10px }
+  h1 { font-size: 20px; white-space: nowrap }
+  .sub { display: none }
+  .summary { flex-wrap: wrap; gap: 5px; min-width: 0 }
+  .pill { font-size: 11px; padding: 3px 7px }
+  .tabs { display: none }
+  .picker { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 6px }
+  .picker select { min-width: 0; min-height: 44px; font: 600 16px var(--body); padding: 0 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink) }
+  .picker .btn { padding: 0; min-height: 44px; font-size: 18px }
+  .ep { grid-template-columns: minmax(0, 1fr); gap: 12px }
+  .rail { gap: 12px }
+  .player { top: 0; z-index: 5; margin-inline: calc(-1 * var(--gutter)); background: var(--bg); padding-bottom: 6px; gap: 5px; border-bottom: 1px solid var(--line) }
+  .player.big { position: static }
+  .screen { position: relative; aspect-ratio: auto; height: clamp(260px, 88vw, 370px); border-radius: 0 }
+  .screen video { position: absolute; inset: 0 }
+  .player.big .screen { aspect-ratio: 9/16; height: auto; max-height: 760px }
+  .now, .transport, .subBox { margin-inline: var(--gutter) }
+  .tbtn { min-height: 36px; font-size: 11px }
+  .subBox { min-height: 48px; padding: 7px 10px }
+  .keysHint { display: none }
+  .sizeBtn { display: inline-block; min-height: 34px; padding: 4px 10px; font-size: 12px }
+  body:has(textarea:focus, .tin:focus) .player { position: static }
+  .c-head { order: 0 } .c-strip { order: 1 } .c-notes { order: 2 } .c-spec { order: 3 }
+  .card { padding: 12px 14px }
+  .title { font-size: 19px }
+  .meta code { display: none }
+  .btn { min-height: 44px; padding: 9px 13px; font-size: 14px }
+  .btn.sm { min-height: 36px; padding: 6px 10px; font-size: 12px }
+  .catBtn { min-height: 36px; padding: 6px 11px; font-size: 13px }
+  .decide .btn { flex: 1 1 auto; white-space: nowrap }
+  .strip, .strip.focusCut { display: flex; gap: 6px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 4px; margin-inline: -4px }
+  .frame { flex: 0 0 82px; scroll-snap-align: center; min-height: 146px }
+  .tin { min-height: 44px; font-size: 16px; width: 92px }
+  textarea { font-size: 16px }
+  .note { grid-template-columns: auto minmax(0, 1fr) }
+  .note .tt { min-height: 36px }
+  .note .acts { grid-column: 1 / -1; justify-content: flex-end }
+  .note .acts button { min-height: 36px; font-size: 13px; padding: 6px 12px }
+}
+@media (max-width: 760px) and (max-height: 500px) { .player { position: static } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>8화 WebGL 씬 디자인 검수표</h1>
+      <p class="sub">Surgery Recording (2:48.3 · 11컷) — 컷별 카메라·동선·포즈·소품을 프레임 단위로 검수하고 메모를 모아 채팅에 바로 붙여넣으세요.</p>
+    </div>
+    <div class="summary" id="summary"></div>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="컷 선택"></nav>
+  <div class="picker">
+    <button class="btn" id="cutPrev" aria-label="이전 컷">‹</button>
+    <select id="cutSel" aria-label="컷 고르기"></select>
+    <button class="btn" id="cutNext" aria-label="다음 컷">›</button>
+  </div>
+
+  <main class="ep">
+    <aside class="player" id="player">
+      <div class="screen">
+        <video id="vid" src="surgery-webgl-v1.mp4" poster="f/surgery-webgl-v1/poster.jpg" controls playsinline preload="metadata"></video>
+        <div class="hudBadge" id="hudBadge">C01 · f0000 · clinic</div>
+      </div>
+      <div class="now">
+        <span><b id="nowT">0:00.0</b> · <span id="nowF">f0</span> / 5048</span>
+        <button type="button" class="btn sizeBtn" id="sizeBtn" aria-pressed="false">크게 보기</button>
+        <span>2:48.3</span>
+      </div>
+      <div class="transport" role="group" aria-label="프레임 이동 컨트롤">
+        <button type="button" class="tbtn" id="btnBack1s" title="1초 뒤로 (Shift+←)">-1s</button>
+        <button type="button" class="tbtn" id="btnBack1f" title="1프레임 뒤로 (←)">-1f</button>
+        <button type="button" class="tbtn" id="btnPlay" title="재생/일시정지 (Space)">▶</button>
+        <button type="button" class="tbtn" id="btnFwd1f" title="1프레임 앞으로 (→)">+1f</button>
+        <button type="button" class="tbtn" id="btnFwd1s" title="1초 앞으로 (Shift+→)">+1s</button>
+        <button type="button" class="tbtn" id="btnLoop" aria-pressed="false" title="현재 컷 구간 반복 (L)">반복</button>
+        <button type="button" class="tbtn" id="btnRate" title="재생 속도 변경">1.0x</button>
+      </div>
+      <div class="subBox" aria-live="polite">
+        <div class="subMeta"><span id="subIdx">대사 동기화</span><span id="subRange">0:00.0</span></div>
+        <div class="subText" id="subText">영상을 재생하거나 장면을 누르면 현재 대사가 표시됩니다.</div>
+      </div>
+      <div class="keysHint">Space 재생 · ←/→ ±1f · Shift+←/→ ±1s · [/] 컷 이동 · L 반복 · N 메모</div>
+    </aside>
+
+    <div class="rail" id="rail"></div>
+  </main>
+</div>
+
+<input type="file" id="importFile" accept="application/json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const DATA = {"id": "surgery-webgl-v1", "film": "8화 Surgery Recording", "len": 168.27, "fps": 30, "totalFrames": 5048, "src": "surgery-recording/webgl/first_look_surgery.mp4", "speed": "영어 내레이션 mix.wav (228.5 WPM · -14.0 LUFS) · WebGL 블로킹 1차 · 11컷 8/8 PASS", "cast": {"lead": {"name": "주인공 (Lead)", "color": "#c0392b", "desc": "빨강 · Male_Adult_18 (1.81m)"}, "doctor": {"name": "의사 (Doctor)", "color": "#168f8a", "desc": "청록 · Female_Adult_01 (1.74m)"}, "nurse": {"name": "간호사 (Nurse)", "color": "#4a90d9", "desc": "파랑 · Female_Adult_01 (1.74m)"}, "wife": {"name": "아내 (Wife)", "color": "#d98a4e", "desc": "주황 · Female_Adult_01 (1.74m)"}, "boss": {"name": "원장 (Boss)", "color": "#34495e", "desc": "남색 · Business_Male_02 (1.82m)"}, "helper": {"name": "보조/판사 (Helper)", "color": "#7f8c8d", "desc": "회색 · Male_Adult_07 (1.82m)"}}, "sets": {"clinic": "수술실·진료실 (6.0×5.6×2.8m · 이동침대·롤링수납함·모니터·IV폴·동쪽문)", "car": "세단 실내 컷어웨이 (운전석 아내·조수석 주인공 0.84m 간격 · 스크롤 도로·신호등)", "office": "원장실 (6.0×4.8×2.8m · 임원책상 1.8m·유선전화기·의자·출입문)", "court": "법정 및 복도 (7.2×6.1×3.4m · 판사석·원고/피고 테이블·대리석 복도)"}, "cuts": [{"id": "c01", "short": "OR 훅", "title": "C01 · OR 수술실 훅 & 침대 밑 녹음 폰 공개", "f0": 0, "f1": 191, "t0": 0.0, "t1": 6.37, "set": "clinic", "trans": "시작 컷", "cast": ["lead", "doctor", "nurse"], "src": "surgery-recording/webgl/c01/cut.js", "staging": ["오버헤드 3/4 오빗으로 수술대에 누운 주인공과 조롱하는 의사 구도 시작", "2.727s 펀치 SFX에 정확히 맞춘 의사의 팔꿈치 모은 주먹 시늉 연기", "4.2~6.37s 침대 아래로 빠르게 크레인 다이브 → 롤링 수납함 빨간 후디 위 REC 08:14 폰 클로즈업"], "cues": ["2.727s 주먹 시늉 (+0.00fr)", "6.187s REC 비프 (+0.00fr)"], "checks": [["ok", "발접지·IK", "4접촉, 갭 0.0mm, 슬라이드 0.0mm, IK 최대 0.02cm"], ["ok", "큐 싱크", "펀치(2.727s)·비프(6.187s) 오차 0.00프레임"], ["ok", "충돌·관절", "5쌍 충돌 0, 모든 관절 한계 내"], ["ok", "카메라·정합", "최대 회전 2.19°/f (한계 2.5°), 최단거리 0.87m, Must-show 3/3, take 정합 0.07mm"]], "watch": ["4.6s 침대 밑 크레인 다이브 시 다리/침대 프레임 가림이 자연스러운지", "2.7s 의사 주먹 시늉 각도·실루엣이 훅으로 충분히 강렬한지"]}, {"id": "c02", "short": "사전상담", "title": "C02 · 수술 전 상담 · REC 탭 · 간호사 입장 · 후디 투척", "f0": 183, "f1": 842, "t0": 6.1, "t1": 28.07, "set": "clinic", "trans": "8f 디졸브", "cast": ["lead", "doctor", "nurse"], "src": "surgery-recording/webgl/c02/cut.js", "staging": ["의자에 앉은 주인공 옆에 서서 주의사항 설명하는 의사 (3/4 상담 구도)", "14.8~18.8s 매크로 줌: 검지 끝으로 정확히 폰 REC 버튼 탭 (18.016s 비프)", "18.65~20.35s 의사가 주인공 팔을 물리적으로 토닥임 (\"Smart move\")", "22.632s 간호사 문 열고 입장 → 24.65s 두 손으로 빨간 후디+폰을 롤링 수납함에 포물선 투척 (25.30s 착지)"], "cues": ["18.016s REC 탭 (+0.00fr)", "22.632s 문 열림 (+0.00fr)", "25.300s 수납함 착지 (+0.00fr)"], "checks": [["ok", "발접지·좌석", "19접촉, 갭 -0.3..0.1mm, 슬라이드 1.2mm, 의자 착석 PASS"], ["ok", "손그립·큐", "폰 그립 533샘플 드리프트 0.00mm · 3개 SFX 큐 0.00fr"], ["ok", "충돌·관절", "7쌍 충돌 0, 팔꿈치 최대 136° (한계 150°)"], ["ok", "카메라·정합", "최대 회전 1.95°/f, 최단거리 0.71m, Must-show 5/5, take 정합 0.07mm"]], "watch": ["15.5~18.0s 폰 화면 매크로 구도에서 손·얼굴 비율", "23.5s 간호사 문 열고 들어올 때 화면 가장자리 프레이밍", "25.0s 후디+폰 투척 궤적과 착지 리듬"]}, {"id": "c03", "short": "마취·기상", "title": "C03 · 수납함 침대 밑 진입 · 마취 블랙아웃 · 회복실 기상", "f0": 834, "f1": 1382, "t0": 27.8, "t1": 46.07, "set": "clinic", "trans": "8f 디졸브", "cast": ["lead", "doctor", "nurse"], "src": "surgery-recording/webgl/c03/cut.js", "staging": ["28.15~29.85s 로우 웜즈아이 앵글: 간호사가 수납함을 침대 밑으로 물리적으로 밀어 넣음 (마찰 감속)", "주사기 5손가락 실측 그립 접근 → 주인공 고개 돌려 외면", "의사 손가락 카운트다운(\"Ten. Nine. Eight. Black.\") → 38.367s 스파이럴 줌 블랙아웃", "회복실 기상: 의사 사라짐, 간호사가 눈을 피하며 두 손 핀치로 퇴원 서류 침대 위 전달 (44.672s)"], "cues": ["28.150s 수납함 밀기 (+0.00fr)", "38.367s 블랙아웃 (+0.00fr)", "44.672s 서류 전달 (+0.00fr)"], "checks": [["ok", "발접지·IK", "4접촉, 갭 0.0mm, 슬라이드 0.0mm, IK 최대 0.02cm"], ["ok", "손그립·큐", "주사기 그립 513샘플 드리프트 0.18mm · 3개 큐 0.00fr"], ["ok", "충돌·관절", "5쌍 충돌 0, 목 최대 34° (한계 45°)"], ["ok", "카메라·정합", "최대 회전 2.01°/f, 최단거리 0.65m, Must-show 3/3, 회복실 의사 프레임아웃 확인"]], "watch": ["35.0s 카운트다운 시 의사 상반신 프레임 여백(천장 여백이 넓은지)", "38.37s 블랙아웃 페이드 타이밍과 스파이럴 속도", "42.5s 눈 피하는 간호사 시선 각도"]}, {"id": "c04", "short": "차 안 발견", "title": "C04 · 귀갓길 차 안 · REC 47:12 발견 · AUX 연결", "f0": 1374, "f1": 1805, "t0": 45.8, "t1": 60.17, "set": "car", "trans": "8f 디졸브", "cast": ["lead", "wife"], "src": "surgery-recording/webgl/c04/cut.js", "staging": ["스크롤 도로 배경 위 아내 양손 5손가락 핸들 그립 운전 투샷", "48.126s 따뜻한 폰 꺼냄 → 51.0s 매크로 REC 47:12 빨간 점 점멸 클로즈업", "52.75s 왼손 검지 STOP 탭 → 53.237s 콘솔 거치 & 차량 스피커 연결 → 54.65s 10분 스킵", "57.367s 녹음 속 OR 문 닫히는 소리(door-latch SFX)에 맞춰 주인공 긴장 줌인"], "cues": ["48.126s 폰 꺼냄 (+0.00fr)", "53.237s 스피커 연결 (+0.00fr)", "57.367s 문 닫힘 (+0.00fr)"], "checks": [["ok", "발접지·좌석", "16접촉, 갭 0.1..0.2mm, 슬라이드 0.0mm, 2좌석 PASS"], ["ok", "손그립·큐", "폰 그립 307샘플 드리프트 0.12mm · 3개 큐 0.00fr"], ["ok", "충돌·관절", "3쌍 충돌 0, 핸들 그립 양손 자연 관절"], ["ok", "카메라·정합", "최대 회전 0.85°/f, 최단거리 1.53m (매크로 0.8m+), Must-show 3/3"]], "watch": ["46.8s 차량 전면 투샷에서 루프/윈드실드 프레임 라인 위치", "53.2s AUX 연결·콘솔 내려놓기 시 손 움직임 가시성", "59.0s 문 닫히는 소리 직후 주인공 긴장 프레이밍"]}, {"id": "c05", "short": "녹음1·급제동", "title": "C05 · 녹음 재생 1부 · 빨간불 급브레이크 · 바늘 조롱 경악", "f0": 1797, "f1": 2295, "t0": 59.9, "t1": 76.5, "set": "car", "trans": "8f 디졸브", "cast": ["lead", "wife"], "src": "surgery-recording/webgl/c05/cut.js", "staging": ["60.2~66.1s 차 안 스피커로 의사의 '얼굴 한 대 치고 싶었다' 녹음 재생 → 주인공 1차 충격", "66.35~67.35s 빨간불 급브레이크(screech SFX 66.753s): 관성 쏠림 + 카메라 펀치", "68.6s 아내가 핸들 잡은 채 고개 휙 돌려 손짓 (\"Was that your doctor?\")", "70.6~76.0s 바늘 조롱 녹음에 주인공 턱 잡으며 경악"], "cues": ["66.350s 빨간불 급브레이크 (+0.00fr)"], "checks": [["ok", "발접지·좌석", "20접촉, 갭 0.1..0.2mm, 슬라이드 0.0mm, 2좌석 PASS"], ["ok", "큐·IK", "급제동 큐 0.00fr · IK 오차 0.00cm"], ["ok", "충돌·관절", "3쌍 충돌 0, 목 최대 29.9°"], ["ok", "카메라·정합", "최대 회전 1.31°/f, 최단거리 1.46m, Must-show 3/3, take 정합 0.06mm"]], "watch": ["66.75s 급브레이크 시 관성 쏠림과 카메라 펀치 강도가 충분한지", "61.5s·74.0s 차 안 리액션 컷이 단조롭지 않은지 (OR 컷어웨이 필요 여부 검토)"]}, {"id": "c06a", "short": "OR 회상", "title": "C06a · OR 녹음 회상 · 팔 발진 매독 조롱 · 가짜 호출 지시", "f0": 2287, "f1": 2898, "t0": 76.23, "t1": 96.6, "set": "clinic", "trans": "8f 디졸브", "cast": ["lead", "doctor", "helper"], "src": "surgery-recording/webgl/c06a/cut.js", "staging": ["79.1~81.6s OR 보조(회색)가 침대 위 주인공 팔 발진을 검지 끝으로 정확히 지목", "81.8~85.5s 의사 과장된 양손 들기 뒷걸음 조롱(\"Don't touch it, syphilis\")", "85.759s 수술실 웃음바다(어깨 들썩 웃음 연기 + 탑다운 리듬 전환)", "90.0~93.9s 의사 '가짜 응급 호출 보내라' 지시 (92.596s 페이저 비프)"], "cues": ["85.759s OR 웃음 (+0.00fr)", "92.596s 가짜 페이저 비프 (+0.00fr)"], "checks": [["ok", "발접지·IK", "4접촉, 갭 0.0mm, 슬라이드 0.0mm, IK 최대 0.03cm"], ["ok", "큐 싱크", "웃음(85.759s)·페이저(92.596s) 0.00fr"], ["ok", "충돌·관절", "5쌍 충돌 0, 모든 관절 한계 내"], ["ok", "카메라·정합", "최대 회전 2.29°/f (한계 2.5°), 최단거리 0.87m, Must-show 3/3"]], "watch": ["80.2s 보조가 팔 지목할 때 침대 위 주인공 팔이 함께 잘 보이는지", "86.2s 웃음 탑다운 구도에서 의사가 프레임 상단으로 잘리는 느낌 여부", "88.9s 'I turned the volume up' 순간 차 안 컷어웨이 없이 OR 유지가 자연스러운지"]}, {"id": "c06b", "short": "차트폭로", "title": "C06b · 차 안 차트 조작 청취 · 서류 낚아챔 · HEMORRHOIDS 폭로", "f0": 2890, "f1": 3364, "t0": 96.33, "t1": 112.13, "set": "car", "trans": "8f 디졸브", "cast": ["lead", "wife"], "src": "surgery-recording/webgl/c06b/cut.js", "staging": ["96.4~102.0s '치질 진단 적어 넣어' 녹음을 들으며 굳어가는 주인공", "102.25s 대시보드 서류 낚아채기 → 103.826s 양손 앞엄지·뒤네손가락 핀치로 차트 펼침", "106.043s stamp-thud SFX + 매크로 줌: 빨간 박스 강조 'HEMORRHOIDS' 정면 폭로", "108.6~112.1s 분노에 찬 주인공 얼굴 클로즈업 → 다음 날 원장실로 전환"], "cues": ["102.250s 서류 잡기 (+0.00fr)", "103.826s 차트 펼침 (+0.00fr)", "106.043s HEMORRHOIDS 쿵 (+0.00fr)"], "checks": [["ok", "발접지·좌석", "20접촉, 갭 0.1..0.2mm, 슬라이드 0.0mm, 2좌석 PASS"], ["ok", "큐·IK", "서류잡기·펼침·폭로 3큐 모두 0.00fr · IK 0.00cm"], ["ok", "충돌·관절", "3쌍 충돌 0, 양손 서류 핀치 손목 14.8°"], ["ok", "카메라·정합", "최대 회전 0.96°/f, 최단거리 1.05m, Must-show 3/3, take 정합 0.05mm"]], "watch": ["103.8s→106.2s 서류 양손 핀치 매크로 시 종이 위치와 자막 영역 간섭 여부", "111.0s 분노 클로즈업 앵글·조명 대비"]}, {"id": "c07", "short": "원장실 대면", "title": "C07 · 원장실 입장 · 서류 책상 투척 · 의사 거짓말 · 원장 전화기 손뻗음", "f0": 3356, "f1": 4098, "t0": 111.87, "t1": 136.6, "set": "office", "trans": "8f 디졸브", "cast": ["lead", "doctor", "boss"], "src": "surgery-recording/webgl/c07/cut.js", "staging": ["111.87~114.55s 서류 들고 원장실로 성큼 걸어 들어오는 주인공 (발걸음 0.433s 동기화)", "116.545s paper-slide SFX에 맞춰 원장 책상 위에 HEMORRHOIDS 서류 쾅 내려놓고 밀기", "122.1~130.8s 의사 태연한 양손 펼침 거짓말 → 주인공 향한 적반하장 지목(\"Call security.\")", "131.05~136.60s 원장이 유선전화기 수화기 위로 오른손을 둥글게 뻗으며 퇴거 요구 (C08과 연속 joinPose 연결!)"], "cues": ["116.545s 서류 슬라이드 (+0.00fr)", "131.050s 원장 전화기 손뻗음 (+0.00fr)"], "checks": [["ok", "발접지·좌석", "20접촉, 갭 -0.2..0.3mm, 슬라이드 1.5mm, 원장 착석 PASS"], ["ok", "큐·IK", "서류·전화기 2큐 0.00fr · 발 IK 최대 0.23cm"], ["ok", "충돌·관절", "6쌍 충돌 0, 손목 최대 38.3°"], ["ok", "카메라·정합", "최대 회전 1.85°/f, 최단거리 0.63m, Must-show 3/3, take 정합 0.07mm"]], "watch": ["113.5s 입장 시 문과 주인공이 프레임 왼쪽으로 치우쳐 보이는지", "116.6s 서류 내려놓기 앵글 임팩트", "133.8s 원장 전화기 손뻗음이 긴장감 있게 잡히는지 (그리고 136.6s C08 이음새)"]}, {"id": "c08", "short": "재생 역전", "title": "C08 · 연속 joinPose 클라이맥스 · 폰 PLAY 재생 · 원장 멈춤 · 의사 붕괴", "f0": 4098, "f1": 4573, "t0": 136.6, "t1": 152.43, "set": "office", "trans": "연속 joinPose (0f 컷)", "cast": ["lead", "doctor", "boss"], "src": "surgery-recording/webgl/c08/cut.js", "staging": ["C07 마지막 포즈에서 끊김 없이 이어지는 연속 컷(joinPose) — 주인공 5손가락 그립으로 책상 위 폰 내려놓기 (137.338s)", "138.999s 검지 끝으로 PLAY 버튼 정확히 탭 → 정적 & 녹음 파형 재생", "143.1~146.0s 매크로: 유선전화기 위 원장 손이 얼어붙었다가 천천히 손가락을 펴며 철수", "148.9~152.4s 의사 미소 붕괴 → 두 손 모아 내려다보며 패배감 클로즈업 오빗"], "cues": ["137.338s 폰 놓기 (+0.00fr)", "138.999s PLAY 탭 (+0.00fr)", "143.950s 원장 손 철수 (+0.00fr)"], "checks": [["ok", "발접지·좌석", "14접촉, 갭 0.0..0.3mm, 슬라이드 0.0mm, 원장 착석 PASS"], ["ok", "손그립·큐", "폰 그립 45샘플 드리프트 0.13mm · 3큐 0.00fr"], ["ok", "충돌·관절", "6쌍 충돌 0, 모든 관절 한계 내"], ["ok", "카메라·정합", "최대 회전 1.79°/f, 최단거리 0.68m (매크로 0.4m+), Must-show 3/3"]], "watch": ["136.60s C07→C08 joinPose 전환에 미세한 튐이 없는지", "139.2s PLAY 탭 후 녹음 파형/빛 연출 시인성", "144.6s 원장 손 떼는 타이밍의 서스펜스"]}, {"id": "c09", "short": "법정 판결", "title": "C09 · 법정 판사봉 내려침 · $500,000 승소 · 의사 FIRED 붕괴", "f0": 4565, "f1": 4862, "t0": 152.17, "t1": 162.07, "set": "court", "trans": "8f 디졸브", "cast": ["lead", "doctor", "helper"], "src": "surgery-recording/webgl/c09/cut.js", "staging": ["법정 크레인 도입 → 154.417s 판사(회색) 5손가락 판사봉 그립 & 블록 강타 (바운스+카메라 펀치)", "159.063s '$500,000' 배상 판결 팝 + 주인공 조용히 주먹 쥐며 승소 리액션", "160.892s 'FIRED' 배너와 함께 의사 양손으로 관자놀이 감싸며 책상 위 무너짐 (머리 관통 0)"], "cues": ["154.417s 판사봉 강타 (+0.00fr)", "159.063s $500,000 팝 (+0.00fr)"], "checks": [["ok", "발접지·좌석", "18접촉, 갭 0.1..0.2mm, 슬라이드 0.0mm, 3좌석 PASS"], ["ok", "큐·IK", "판사봉·판결 2큐 0.00fr · IK 오차 0.00cm"], ["ok", "충돌·관절", "4쌍 충돌 0, 관자놀이 감싸기 머리 관통 0"], ["ok", "카메라·정합", "최대 회전 2.46°/f (한계 2.5° 근접!), 최단거리 0.87m, Must-show 3/3"]], "watch": ["155.5s 부근 카메라 회전이 2.46°/f로 한계(2.5°)에 가까워 약간 빠르게 느껴지는지", "159.0s $500,000 오버레이 가시성과 주인공 구도", "161.5s FIRED 연출 시 의사 포즈·구도"]}, {"id": "c10", "short": "복도 엔딩", "title": "C10 · 법원 복도 콜백 엔딩 · 지나치는 의사 · 폰 들어올림", "f0": 4854, "f1": 5048, "t0": 161.8, "t1": 168.27, "set": "court", "trans": "8f 디졸브", "cast": ["lead", "doctor"], "src": "surgery-recording/webgl/c10/cut.js", "staging": ["162.0~164.4s 법원 대리석 복도: 고개 푹 숙인 의사가 주인공 옆을 서둘러 지나쳐 감", "164.921s tap-case SFX에 맞춰 주인공이 5손가락으로 쥔 47:12 저장 폰을 당당히 들어올림", "165.0~168.27s 마지막 히어로 클로즈업 푸시: \"Just like you said, Doctor. I didn't miss a word.\""], "cues": ["164.921s 폰 들어올림 (+0.00fr)"], "checks": [["ok", "발접지·IK", "19접촉, 갭 -0.3..0.2mm, 슬라이드 1.6mm, IK 최대 0.51cm"], ["ok", "손그립·큐", "폰 그립 387샘플 드리프트 0.15mm · 콜백 큐 0.00fr"], ["ok", "충돌·관절", "1쌍 최근접 506.1mm 충돌 0"], ["ok", "카메라·정합", "최대 회전 0.98°/f, 최단거리 1.17m (엔딩 푸시 0.76m), Must-show 2/2"]], "watch": ["166.8s 엔딩 히어로 샷에서 폰이 화면 왼쪽 가장자리에 살짝 걸리는 점 (중앙 쪽으로 당기면 더 깔끔할지)", "163.2s 의사 스쳐 지나가는 속도·시선 처리"]}], "shots": [["c01", 0.2, "OR 훅: 침대·의사"], ["c01", 2.73, "의사 주먹 시늉"], ["c01", 4.6, "침대 밑 크레인 다이브"], ["c01", 5.9, "수납함 후디·REC 폰"], ["c02", 7.5, "수술 전 상담"], ["c02", 15.5, "폰 꺼내 녹음 준비"], ["c02", 18.0, "검지 REC 버튼 탭"], ["c02", 19.7, "의사 팔 토닥임"], ["c02", 23.5, "간호사 문 열고 입장"], ["c02", 25.0, "후디·폰 수납함 투척"], ["c02", 27.2, "수납함 안 녹음 폰"], ["c03", 29.0, "수납함 침대 밑 진입"], ["c03", 33.2, "의사 주사기 그립"], ["c03", 35.0, "의사 카운트다운"], ["c03", 38.37, "마취 블랙아웃"], ["c03", 42.5, "회복실·눈 피하는 간호사"], ["c03", 44.7, "퇴원 서류 침대 전달"], ["c04", 46.8, "귀갓길 차 안 (아내 운전)"], ["c04", 51.0, "REC 47:12 매크로"], ["c04", 53.24, "정지 탭·AUX 연결"], ["c04", 59.0, "문 닫힘 소리·긴장 줌"], ["c05", 61.5, "녹음 1차 충격 반응"], ["c05", 66.75, "빨간불 급브레이크"], ["c05", 68.6, "아내 고개 돌림"], ["c05", 74.0, "바늘 조롱·경악"], ["c06a", 80.2, "OR 회상: 팔 발진 지목"], ["c06a", 84.4, "의사 과장 뒷걸음 조롱"], ["c06a", 86.2, "수술실 웃음바다"], ["c06a", 92.0, "가짜 호출 지시"], ["c06b", 98.5, "차 안: 차트 조작 청취"], ["c06b", 103.83, "대시보드 서류 펼침"], ["c06b", 106.2, "HEMORRHOIDS 폭로"], ["c06b", 111.0, "분노 표정 (전환 직전)"], ["c07", 113.5, "원장실 입장·서류 지참"], ["c07", 116.6, "책상 위 서류 내려놓기"], ["c07", 125.5, "의사 태연한 거짓말"], ["c07", 133.8, "원장 유선전화기 손 뻗음"], ["c08", 139.2, "책상 폰 PLAY 재생"], ["c08", 144.6, "원장 굳음·손 뗌"], ["c08", 150.8, "의사 미소 붕괴·고개 숙임"], ["c09", 154.6, "법정 판사봉 내려침"], ["c09", 159.0, "$500,000·주인공 주먹"], ["c09", 161.5, "FIRED·의사 붕괴"], ["c10", 163.2, "복도: 지나치는 의사"], ["c10", 166.8, "엔딩: 폰 들어올림"]], "lines": [[0.0, 3.91, "Right after putting me to sleep, my doctor said she wanted to punch me in the face."], [4.11, 6.18, "She had no idea my phone was recording."], [6.38, 9.38, "An hour earlier, I went in for a quick checkup under sleep medicine."], [9.57, 13.79, "Before it started, my doctor listed home rules. What to eat. What pills to take."], [13.99, 18.01, "I forget stuff when I'm nervous, so I pulled my phone from my red hoodie and hit record."], [18.21, 21.87, "She smiled and patted my arm. \"Smart move. Now you won't miss a word.\""], [22.07, 24.27, "Just then, a nurse walked in. \"Time to change.\""], [24.46, 27.89, "I tossed my hoodie in the bin with my phone inside and forgot to hit stop."], [28.09, 30.04, "They rolled that bin right under my bed."], [30.24, 33.34, "When the nurse brought the needle, I looked away. I hate needles."], [33.54, 36.36, "My doctor laughed. \"Totally normal. Count down from ten.\""], [36.56, 38.81, "Ten. Nine. Eight. Black."], [39.01, 41.2, "When I woke up, I asked the nurse where my doctor went."], [41.4, 45.88, "She wouldn't meet my eyes. \"She got called to an emergency,\" she said, handing back my papers and hoodie."], [46.08, 47.01, "My wife drove me home."], [47.21, 49.65, "Ten minutes in, I pulled my phone out. It was warm."], [49.85, 52.37, "Red dot blinking. Forty-seven minutes."], [52.57, 55.66, "I hit stop, plugged it into the car speaker, and skipped ten minutes ahead."], [55.86, 57.97, "Right after I passed out, the door clicked shut."], [58.17, 60.0, "And my doctor's sweet voice was gone."], [60.2, 66.1, "\"Finally,\" my doctor said on the tape. \"After five minutes of talking to you, I wanted to punch you in the face and man you up a little.\""], [66.3, 69.04, "My wife hit the brakes at a red light. \"Was that your doctor?\""], [69.24, 70.38, "People in the room laughed."], [70.58, 76.03, "\"Did you see him flinch at that tiny needle?\" she went on. \"Grown man acting like a baby. What an idiot.\""], [76.23, 78.94, "My wife gripped the wheel. I trusted her with my life."], [79.14, 81.61, "Then a helper said, \"Hey, he's got a rash on his arm.\""], [81.81, 85.51, "My doctor snapped back. \"Don't touch it. You'll catch syphilis on your arm or something.\""], [85.71, 88.7, "More laughing. She kept making sick jokes about my body."], [88.9, 89.85, "I turned the volume up."], [90.03, 93.88, "\"When he wakes up,\" my doctor said, \"send me a fake page. I don't want to talk to this guy.\""], [94.08, 96.17, "She wasn't busy. She was hiding from me."], [96.37, 97.77, "Then came the worst part."], [97.97, 102.03, "\"Put hemorrhoids on his chart anyway,\" she said. \"Even though we don't see any and probably won't.\""], [102.23, 104.36, "I grabbed my papers off the dash and flipped them open."], [104.56, 108.42, "Right there in black ink: hemorrhoids. Something I didn't even have."], [108.62, 111.95, "She didn't just mock me. She faked my medical chart for fun."], [112.15, 116.15, "Next morning, we walked straight back into that clinic and asked for the boss and my doctor."], [116.35, 121.94, "I dropped my papers on his desk. \"Why does my chart list a problem I don't have? And why did you fake an emergency?\""], [122.14, 124.06, "My doctor smiled, calm as ice."], [124.27, 130.82, "\"Sleep medicine makes people see things,\" she told her boss. \"I never faked a thing. He's making a scene. Call security.\""], [131.02, 136.41, "Her boss reached for his desk phone. \"She's worked here ten years. Unless you have real proof, you need to leave.\""], [136.61, 138.99, "So I set my phone on his desk and hit play."], [139.19, 140.61, "The room went dead quiet."], [140.81, 142.88, "\"Don't touch it. You'll catch syphilis on your arm.\""], [143.08, 145.99, "Her boss froze, then slowly pulled his hand off the phone."], [146.19, 148.71, "\"Put hemorrhoids on his chart anyway, even though we don't see any.\""], [148.9, 152.25, "Her smile died. She looked down at her hands and couldn't say a word."], [152.45, 154.22, "We took that tape straight to a lawyer."], [154.42, 157.35, "In court, the jury heard every second. They didn't take long."], [157.55, 160.69, "They made her and the clinic pay me five hundred thousand dollars."], [160.89, 161.82, "The clinic fired her."], [162.0, 164.4, "Outside court, she rushed past me without looking up."], [164.6, 165.32, "I held up my phone."], [165.53, 167.8, "\"Just like you said, Doctor. I didn't miss a word.\""]]};
+const STORAGE_KEY = "hood-surgery-webgl-v1-state";
+const THEME_KEY = "hood-review-theme";
+const CATS = ["카메라", "동선·포즈", "세트·소품", "타이밍", "기타"];
+const RATES = [1, 0.5, 0.25, 1.5];
+const TAB_IDS = ["all", ...DATA.cuts.map((c) => c.id)];
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const fmt = (t) => { t = Math.max(0, Math.min(DATA.len, +t || 0)); const m = Math.floor(t / 60), s = t - m * 60; return m + ":" + s.toFixed(1).padStart(4, "0"); };
+const parseT = (v) => {
+  v = String(v).trim(); if (!v) return 0;
+  if (v.includes(":")) { const [m, s] = v.split(":"); return Math.max(0, (+m || 0) * 60 + (+s || 0)); }
+  return Math.max(0, +v || 0);
+};
+const frameOf = (t) => Math.max(0, Math.min(DATA.totalFrames - 1, Math.round(t * DATA.fps)));
+const cutAtTime = (t) => {
+  const f = frameOf(t);
+  for (let i = DATA.cuts.length - 1; i >= 0; i--) {
+    if (f >= DATA.cuts[i].f0) return DATA.cuts[i];
+  }
+  return DATA.cuts[0];
+};
+const lineAtTime = (t) => {
+  for (let i = 0; i < DATA.lines.length; i++) {
+    const [a, b, txt] = DATA.lines[i];
+    if (t >= a - 0.05 && t <= b + 0.15) return { i: i + 1, a, b, txt };
+  }
+  return null;
+};
+const slotAt = (shots, t) => {
+  let i = 0;
+  while (i + 1 < shots.length && shots[i + 1][1] <= t + 0.05) i++;
+  return i;
+};
+
+const TOUCH = window.matchMedia?.("(hover: none)").matches;
+let curTab = "all";
+let curCat = "카메라";
+let showAllShotsInCut = false;
+let showAllNotesInCut = false;
+let loopCut = false;
+let rateIdx = 0;
+let bigPlayer = false;
+let state = { verdicts: {}, notes: [] };
+
+function applyTheme(th) {
+  if (th === "dark" || th === "light") document.documentElement.setAttribute("data-theme", th);
+  else document.documentElement.removeAttribute("data-theme");
+}
+try { applyTheme(localStorage.getItem(THEME_KEY)); } catch (e) {}
+
+let toastTimer = null;
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+function encodeState(obj) {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  let bin = ""; bytes.forEach((b) => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function decodeState(str) {
+  const pad = str.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((str.length + 3) % 4);
+  const bin = atob(pad);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        state.verdicts = parsed.verdicts || {};
+        state.notes = Array.isArray(parsed.notes) ? parsed.notes : [];
+      }
+    }
+  } catch (e) {}
+  const h = location.hash.slice(1);
+  if (h.startsWith("s=")) {
+    try {
+      const incoming = decodeState(h.slice(2));
+      if (incoming && typeof incoming === "object") {
+        const existingIds = new Set(state.notes.map((n) => n.id));
+        let added = 0;
+        (incoming.notes || []).forEach((n) => {
+          if (n && n.id && !existingIds.has(n.id)) { state.notes.push(n); added++; }
+        });
+        Object.assign(state.verdicts, incoming.verdicts || {});
+        saveState();
+        history.replaceState(null, "", location.pathname + location.search);
+        setTimeout(() => toast(added ? `링크에서 메모 ${added}개를 불러왔어요.` : "링크의 검수 상태를 동기화했어요."), 250);
+      }
+    } catch (e) {}
+  } else if (TAB_IDS.includes(h)) {
+    curTab = h;
+  } else {
+    try {
+      const savedTab = localStorage.getItem(STORAGE_KEY + "-tab");
+      if (TAB_IDS.includes(savedTab)) curTab = savedTab;
+    } catch (e) {}
+  }
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function renderSummary() {
+  const okN = DATA.cuts.filter((c) => state.verdicts[c.id] === "ok").length;
+  const fixN = DATA.cuts.filter((c) => state.verdicts[c.id] === "fix").length;
+  const openN = state.notes.filter((n) => !n.done).length;
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark" ||
+    (!document.documentElement.getAttribute("data-theme") && window.matchMedia?.("(prefers-color-scheme: dark)").matches);
+  $("#summary").innerHTML =
+    `<span class="pill ok">통과 <b>${okN}</b>/11컷</span>` +
+    (fixN ? `<span class="pill warn">수정 <b>${fixN}</b>컷</span>` : "") +
+    `<span class="pill">메모 <b>${openN}</b>개</span>` +
+    `<button type="button" class="themeBtn" id="themeBtn" aria-label="테마 전환">${isDark ? "라이트" : "다크"}</button>`;
+  $("#themeBtn").addEventListener("click", () => {
+    const next = isDark ? "light" : "dark";
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    renderSummary();
+  });
+}
+
+function renderTabs() {
+  const totalOpen = state.notes.filter((n) => !n.done).length;
+  const allBtn = `<button class="tab" role="tab" aria-selected="${curTab === "all"}" data-tab="all"><span>전체 (11컷)</span>${totalOpen ? `<span class="n">${totalOpen}</span>` : ""}</button>`;
+  const cutBtns = DATA.cuts.map((c) => {
+    const v = state.verdicts[c.id] || "";
+    const n = state.notes.filter((x) => x.cut === c.id && !x.done).length;
+    return `<button class="tab" role="tab" aria-selected="${curTab === c.id}" data-tab="${c.id}">` +
+      `<span class="vdot ${v}" aria-hidden="true"></span>` +
+      `<span class="cid">${c.id.toUpperCase()}</span><span>${esc(c.short)}</span>` +
+      `${n ? `<span class="n">${n}</span>` : ""}</button>`;
+  }).join("");
+  $("#tabs").innerHTML = allBtn + cutBtns;
+
+  const selOpts = [`<option value="all" ${curTab === "all" ? "selected" : ""}>전체 (11컷 · 2:48.3)${totalOpen ? " · 메모 " + totalOpen : ""}</option>`]
+    .concat(DATA.cuts.map((c) => {
+      const v = state.verdicts[c.id] === "ok" ? "✓ " : state.verdicts[c.id] === "fix" ? "! " : "";
+      const n = state.notes.filter((x) => x.cut === c.id && !x.done).length;
+      return `<option value="${c.id}" ${curTab === c.id ? "selected" : ""}>${v}${c.id.toUpperCase()} ${esc(c.short)} (${fmt(c.t0)})${n ? " · 메모 " + n : ""}</option>`;
+    }));
+  $("#cutSel").innerHTML = selOpts.join("");
+  const idx = TAB_IDS.indexOf(curTab);
+  $("#cutPrev").disabled = idx <= 0;
+  $("#cutNext").disabled = idx >= TAB_IDS.length - 1;
+}
+
+function activeShots() {
+  const mapped = DATA.shots.map((s, idx) => ({ idx, cut: s[0], t: s[1], label: s[2] }));
+  if (curTab === "all" || showAllShotsInCut) return mapped;
+  return mapped.filter((s) => s.cut === curTab);
+}
+
+function activeNotes() {
+  const list = [...state.notes].sort((a, b) => a.t - b.t);
+  if (curTab === "all" || showAllNotesInCut) return list;
+  return list.filter((n) => n.cut === curTab);
+}
+
+function buildMarkdown() {
+  const okCuts = DATA.cuts.filter((c) => state.verdicts[c.id] === "ok").map((c) => c.id.toUpperCase());
+  const fixCuts = DATA.cuts.filter((c) => state.verdicts[c.id] === "fix").map((c) => c.id.toUpperCase());
+  const open = state.notes.filter((n) => !n.done).sort((a, b) => a.t - b.t);
+  const out = [];
+  out.push(`## ${DATA.film} WebGL 씬 디자인 검수 메모`);
+  out.push(`- 통과 (${okCuts.length}/11): ${okCuts.length ? okCuts.join(", ") : "없음"}`);
+  if (fixCuts.length) out.push(`- 수정 필요 (${fixCuts.length}): ${fixCuts.join(", ")}`);
+  out.push("");
+  if (!open.length) {
+    out.push("(열린 수정 메모 없음)");
+    return out.join("\n");
+  }
+  const byCut = new Map();
+  open.forEach((n) => {
+    const cid = n.cut || cutAtTime(n.t).id;
+    if (!byCut.has(cid)) byCut.set(cid, []);
+    byCut.get(cid).push(n);
+  });
+  DATA.cuts.forEach((c) => {
+    const items = byCut.get(c.id);
+    if (!items || !items.length) return;
+    out.push(`### ${c.id.toUpperCase()} · ${c.short} (${c.set}, ${fmt(c.t0)}–${fmt(c.t1)})`);
+    items.forEach((n) => {
+      out.push(`- [${fmt(n.t)} · f${frameOf(n.t)} · ${n.cat || "기타"}] ${n.text}`);
+    });
+    out.push("");
+  });
+  return out.join("\n").trim();
+}
+
+function renderNotesListHtml(list) {
+  if (!list.length) {
+    return `<li class="empty">${curTab === "all" ? "아직 메모가 없어요. 위 장면을 누르거나 영상을 멈추고 씬 디자인 수정 메모를 남겨 주세요." : "이 컷에 남긴 메모가 아직 없어요."}</li>`;
+  }
+  return list.map((n) => {
+    const cid = (n.cut || cutAtTime(n.t).id).toUpperCase();
+    return `<li class="note ${n.done ? "done" : ""}">` +
+      `<button type="button" class="tt" data-seek="${n.t}">${fmt(n.t)}<br>f${frameOf(n.t)} · ${cid}</button>` +
+      `<div><span class="cat">${esc(n.cat || "기타")}</span><div class="txt">${esc(n.text)}</div></div>` +
+      `<div class="acts">` +
+      `<button type="button" class="btn" data-done="${n.id}">${n.done ? "다시 열기" : "반영됨"}</button>` +
+      `<button type="button" class="btn" data-del="${n.id}">삭제</button>` +
+      `</div></li>`;
+  }).join("");
+}
+
+function renderRail() {
+  const cut = DATA.cuts.find((c) => c.id === curTab) || null;
+  const shots = activeShots();
+  const notes = activeNotes();
+  const openAll = state.notes.filter((n) => !n.done);
+  const notedSlots = new Set(openAll.map((n) => slotAt(DATA.shots, n.t)));
+  const vid = $("#vid");
+  const nowT = vid ? vid.currentTime : (cut ? cut.t0 : 0);
+  const nowCut = cutAtTime(nowT);
+
+  let headHtml = "";
+  if (!cut) {
+    const castChips = Object.values(DATA.cast).map((m) =>
+      `<span class="castChip"><i style="background:${m.color}"></i>${esc(m.name)}</span>`
+    ).join("");
+    headHtml = `
+      <div class="card c-head">
+        <h2 class="title">8화 Surgery Recording · WebGL 씬 디자인 검수</h2>
+        <div class="meta">
+          <span>${DATA.len.toFixed(1)}초 · ${DATA.totalFrames.toLocaleString()}f @ 30fps · 11컷 · 4세트</span>
+          <code>${esc(DATA.src)}</code>
+        </div>
+        <div class="castRow">${castChips}</div>
+        <div class="decide">
+          <button type="button" class="btn on" id="copyMdTop">채팅용 메모 복사 (${openAll.length}개)</button>
+          <button type="button" class="btn" id="copyLinkTop">메모 포함 링크 복사</button>
+          <button type="button" class="btn" id="startReviewBtn">C01부터 순서대로 보기</button>
+        </div>
+      </div>`;
+  } else {
+    const v = state.verdicts[cut.id] || "";
+    const castChips = cut.cast.map((k) => {
+      const m = DATA.cast[k];
+      return `<span class="castChip"><i style="background:${m.color}"></i>${esc(m.name)}</span>`;
+    }).join("");
+    headHtml = `
+      <div class="card c-head">
+        <h2 class="title">${esc(cut.title)}</h2>
+        <div class="meta">
+          <span>${fmt(cut.t0)}–${fmt(cut.t1)} (${(cut.t1 - cut.t0).toFixed(1)}초 · f${cut.f0}–${cut.f1 - 1})</span>
+          <span>전환: <b>${esc(cut.trans)}</b></span>
+          <code>${esc(cut.src)}</code>
+        </div>
+        <div class="castRow">${castChips}</div>
+        <div class="decide">
+          <button type="button" class="btn v-ok ${v === "ok" ? "on" : ""}" data-verdict="ok" aria-pressed="${v === "ok"}">이 컷 통과</button>
+          <button type="button" class="btn v-fix ${v === "fix" ? "on" : ""}" data-verdict="fix" aria-pressed="${v === "fix"}">이 컷 수정 필요</button>
+          <button type="button" class="btn" id="jumpCutStart">컷 시작으로</button>
+          <button type="button" class="btn ${loopCut ? "on" : ""}" id="loopCutBtn">${loopCut ? "컷 반복 중" : "이 컷 반복"}</button>
+        </div>
+      </div>`;
+  }
+
+  const stripHtml = `
+    <div class="card c-strip">
+      <h3>
+        <span>${cut && !showAllShotsInCut ? `${cut.id.toUpperCase()} 주요 장면 ${shots.length}곳` : `전체 주요 장면 ${shots.length}곳`} · 탭하면 이동</span>
+        ${cut ? `<button type="button" class="btn sm" id="toggleShotsBtn">${showAllShotsInCut ? "이 컷만 보기" : "전체 45장 보기"}</button>` : ""}
+      </h3>
+      <div class="strip ${cut && !showAllShotsInCut ? "focusCut" : ""}" id="strip">
+        ${shots.map((s) => {
+          const num = String(s.idx + 1).padStart(3, "0");
+          const hasDot = notedSlots.has(s.idx);
+          return `<button type="button" class="frame" data-t="${s.t}" data-i="${s.idx}" aria-label="${s.cut.toUpperCase()} ${fmt(s.t)} ${esc(s.label)}">` +
+            `<img loading="lazy" src="f/${DATA.id}/${num}.jpg" alt="">` +
+            `<span class="t">${cut && !showAllShotsInCut ? fmt(s.t) : `${s.cut.toUpperCase()} ${fmt(s.t)}`}</span>` +
+            `<span class="cap">${esc(s.label)}</span>` +
+            `${hasDot ? '<span class="dot" title="수정 메모 있음"></span>' : ""}</button>`;
+        }).join("")}
+      </div>
+    </div>`;
+
+  const notesHtml = `
+    <div class="card c-notes">
+      <h3>
+        <span>씬 디자인 수정 메모 (${notes.length}개)</span>
+        ${cut ? `<button type="button" class="btn sm" id="toggleNotesBtn">${showAllNotesInCut ? "이 컷 메모만" : `전체 메모 (${state.notes.length})`}</button>` : ""}
+      </h3>
+      <form class="composer" id="noteForm">
+        <div class="cats" role="radiogroup" aria-label="수정 카테고리">
+          ${CATS.map((c) => `<button type="button" class="catBtn ${curCat === c ? "on" : ""}" data-cat="${c}" aria-pressed="${curCat === c}">${c}</button>`).join("")}
+        </div>
+        <div class="row">
+          <label for="tin" class="msg">시간</label>
+          <input class="tin" id="tin" value="${fmt(nowT)}" inputmode="decimal" aria-label="타임스탬프">
+          <span class="tagMono" id="frameTag">f${frameOf(nowT)} · ${nowCut.id.toUpperCase()}</span>
+          <button type="button" class="btn sm" id="useNow">지금 시간</button>
+        </div>
+        <textarea id="txt" placeholder="예: ${cut ? cut.id.toUpperCase() : "C02"} 카메라를 살짝 뒤로 빼서 손과 표정이 함께 보이게" aria-label="메모 내용"></textarea>
+        <div class="row">
+          <button type="submit" class="btn on">메모 남기기</button>
+          <span class="msg" id="fmsg">브라우저에 자동 저장됩니다. 끝나면 아래 [채팅용 복사]로 한 번에 보내세요.</span>
+        </div>
+      </form>
+      <div class="syncBar">
+        <button type="button" class="btn sm on" id="copyMdBtn">채팅용 복사 (${openAll.length}개)</button>
+        <button type="button" class="btn sm" id="copyLinkBtn">메모 포함 링크 복사</button>
+        <button type="button" class="btn sm" id="exportJsonBtn">JSON 백업</button>
+        <button type="button" class="btn sm" id="importJsonBtn">불러오기</button>
+      </div>
+      <ul class="notes" id="noteList">${renderNotesListHtml(notes)}</ul>
+    </div>`;
+
+  let specHtml = "";
+  if (!cut) {
+    const rows = DATA.cuts.map((c) => {
+      const v = state.verdicts[c.id];
+      const badge = v === "ok" ? '<span class="st ok">통과</span>' : v === "fix" ? '<span class="st warn">수정</span>' : '<span class="st ok">8/8</span>';
+      const n = state.notes.filter((x) => x.cut === c.id && !x.done).length;
+      return `<li><button type="button" class="cutRow" data-open-cut="${c.id}">` +
+        `<span class="idTag">${c.id.toUpperCase()}</span>` +
+        `<div><b>${esc(c.short)}</b> <span class="subLine">· ${c.set} · ${fmt(c.t0)}–${fmt(c.t1)} · ${c.trans}</span>` +
+        `<div class="subLine">${esc(c.watch[0])}</div></div>` +
+        `<span style="display:flex;gap:6px;align-items:center">${n ? `<span class="pill warn">메모 ${n}</span>` : ""}${badge}</span>` +
+        `</button></li>`;
+    }).join("");
+    specHtml = `
+      <div class="card c-spec">
+        <h3>11컷 전체 씬 구성 · 8/8 자동 규칙 전원 통과 (클릭하면 해당 컷으로 이동)</h3>
+        <ul class="cutMatrix">${rows}</ul>
+        <h3>직접 눈으로 보면 좋은 씬 디자인 포인트</h3>
+        <ul class="bullets">
+          <li><b>카메라 프레이밍:</b> C02 간호사 입장(0:23.5), C03 카운트다운 상단 여백(0:35.0), C07 입장(1:53.5), C10 엔딩 폰 위치(2:46.8)</li>
+          <li><b>속도·리듬:</b> C09 법정 카메라 회전(2.46°/f, 한계 2.5° 근접)이 과하게 빠른지, C05 차 안 리액션 구간에 OR 컷어웨이가 더 필요한지</li>
+          <li><b>연속성:</b> C07→C08 2:16.6 (f4098) joinPose 0프레임 전환 이음새가 완전히 자연스러운지</li>
+          <li><b>세트 & 소품:</b> 4개 세트(clinic·car·office·court) 실측 배치, 글씨(REC 47:12, HEMORRHOIDS, $500,000, FIRED) 가독성</li>
+        </ul>
+      </div>`;
+  } else {
+    const cutLines = DATA.lines
+      .map((l, i) => ({ i: i + 1, a: l[0], b: l[1], txt: l[2] }))
+      .filter((l) => l.b >= cut.t0 + 0.05 && l.a <= cut.t1 - 0.05);
+    specHtml = `
+      <div class="card c-spec">
+        <h3>세트 · 카메라 & 블로킹 구성</h3>
+        <div class="meta"><span><b>세트 (${cut.set}):</b> ${esc(DATA.sets[cut.set])}</span></div>
+        <ul class="bullets">${cut.staging.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>
+        <h3>중점 체크 포인트 (사람 눈 검수)</h3>
+        <ul class="bullets">${cut.watch.map((w) => `<li>${esc(w)}</li>`).join("")}</ul>
+        <h3>이 컷의 내레이션 대사 (${cutLines.length}문장 · 클릭 시 해당 대사로 이동)</h3>
+        <ul class="dialogList" id="dialogList">
+          ${cutLines.map((l) => `<li><button type="button" class="dialogBtn" data-seek="${l.a}" data-lidx="${l.i}"><span class="dt">${fmt(l.a)}</span><span>${esc(l.txt)}</span></button></li>`).join("")}
+        </ul>
+        <h3>자동 8개 규칙 수치 점검 (check_${cut.id} + check_take)</h3>
+        <ul class="checks">
+          ${cut.checks.map(([st, w, y]) => `<li><span class="st ${st}">${st === "ok" ? "완료" : st === "warn" ? "확인" : "미완"}</span><span><span class="what">${esc(w)}</span> · <span class="why">${esc(y)}</span></span></li>`).join("")}
+        </ul>
+      </div>`;
+  }
+
+  $("#rail").innerHTML = headHtml + stripHtml + notesHtml + specHtml;
+  bindRailEvents(cut);
+  syncTimeUI(nowT);
+}
+
+function updateNoteFormTag() {
+  const tin = $("#tin");
+  const tag = $("#frameTag");
+  if (!tin || !tag) return;
+  const t = parseT(tin.value);
+  tag.textContent = `f${frameOf(t)} · ${cutAtTime(t).id.toUpperCase()}`;
+}
+
+function bindRailEvents(cut) {
+  document.querySelectorAll("[data-verdict]").forEach((b) => {
+    b.addEventListener("click", () => {
+      if (!cut) return;
+      const v = b.dataset.verdict;
+      state.verdicts[cut.id] = state.verdicts[cut.id] === v ? "" : v;
+      saveState();
+      renderSummary();
+      renderTabs();
+      renderRail();
+    });
+  });
+  $("#jumpCutStart")?.addEventListener("click", () => { if (cut) { seek(cut.t0); $("#vid")?.play().catch(() => {}); } });
+  $("#loopCutBtn")?.addEventListener("click", () => toggleLoop());
+  $("#startReviewBtn")?.addEventListener("click", () => openTab("c01", true));
+  $("#copyMdTop")?.addEventListener("click", copyMarkdown);
+  $("#copyLinkTop")?.addEventListener("click", copyShareLink);
+
+  document.querySelectorAll(".frame").forEach((b) => {
+    b.addEventListener("click", () => {
+      seek(+b.dataset.t);
+      if (!TOUCH) $("#txt")?.focus({ preventScroll: true });
+    });
+  });
+  $("#toggleShotsBtn")?.addEventListener("click", () => { showAllShotsInCut = !showAllShotsInCut; renderRail(); });
+  $("#toggleNotesBtn")?.addEventListener("click", () => { showAllNotesInCut = !showAllNotesInCut; renderRail(); });
+
+  document.querySelectorAll(".catBtn").forEach((b) => {
+    b.addEventListener("click", () => {
+      curCat = b.dataset.cat;
+      document.querySelectorAll(".catBtn").forEach((x) => {
+        const on = x.dataset.cat === curCat;
+        x.classList.toggle("on", on);
+        x.setAttribute("aria-pressed", on);
+      });
+    });
+  });
+
+  $("#tin")?.addEventListener("input", updateNoteFormTag);
+  $("#useNow")?.addEventListener("click", () => {
+    const v = $("#vid");
+    if (v && $("#tin")) { $("#tin").value = fmt(v.currentTime); updateNoteFormTag(); }
+  });
+  $("#noteForm")?.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const ta = $("#txt");
+    const text = ta.value.trim();
+    if (!text) return;
+    const t = Math.round(parseT($("#tin").value) * 10) / 10;
+    const c = cutAtTime(t);
+    state.notes.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      cut: c.id,
+      t,
+      cat: curCat,
+      text,
+      done: false,
+      at: new Date().toISOString(),
+    });
+    saveState();
+    ta.value = "";
+    renderSummary();
+    renderTabs();
+    refreshNotesAndDots();
+    toast(`${c.id.toUpperCase()} ${fmt(t)} 메모 저장됨`);
+  });
+
+  $("#copyMdBtn")?.addEventListener("click", copyMarkdown);
+  $("#copyLinkBtn")?.addEventListener("click", copyShareLink);
+  $("#exportJsonBtn")?.addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify({ film: DATA.id, ...state }, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `film8-webgl-notes-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("JSON 파일로 저장했어요.");
+  });
+  $("#importJsonBtn")?.addEventListener("click", () => $("#importFile").click());
+
+  document.querySelectorAll(".dialogBtn").forEach((b) => {
+    b.addEventListener("click", () => seek(+b.dataset.seek));
+  });
+  document.querySelectorAll("[data-open-cut]").forEach((b) => {
+    b.addEventListener("click", () => openTab(b.dataset.openCut, true));
+  });
+
+  bindNoteItemEvents();
+}
+
+function bindNoteItemEvents() {
+  document.querySelectorAll(".note .tt").forEach((b) => {
+    b.addEventListener("click", () => {
+      seek(+b.dataset.seek);
+      if (!TOUCH) $("#txt")?.focus({ preventScroll: true });
+    });
+  });
+  document.querySelectorAll("[data-done]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const n = state.notes.find((x) => x.id === b.dataset.done);
+      if (!n) return;
+      n.done = !n.done;
+      saveState();
+      renderSummary();
+      renderTabs();
+      refreshNotesAndDots();
+    });
+  });
+  document.querySelectorAll("[data-del]").forEach((b) => {
+    b.addEventListener("click", () => {
+      if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "정말 삭제"; return; }
+      state.notes = state.notes.filter((x) => x.id !== b.dataset.del);
+      saveState();
+      renderSummary();
+      renderTabs();
+      refreshNotesAndDots();
+      toast("메모를 삭제했어요.");
+    });
+  });
+}
+
+function refreshNotesAndDots() {
+  const ul = $("#noteList");
+  const notes = activeNotes();
+  if (ul) {
+    ul.innerHTML = renderNotesListHtml(notes);
+    bindNoteItemEvents();
+  }
+  const openAll = state.notes.filter((n) => !n.done);
+  const notedSlots = new Set(openAll.map((n) => slotAt(DATA.shots, n.t)));
+  document.querySelectorAll(".frame").forEach((f) => {
+    const has = notedSlots.has(+f.dataset.i);
+    const dot = f.querySelector(".dot");
+    if (has && !dot) f.insertAdjacentHTML("beforeend", '<span class="dot" title="수정 메모 있음"></span>');
+    else if (!has && dot) dot.remove();
+  });
+  const cm = $("#copyMdBtn"); if (cm) cm.textContent = `채팅용 복사 (${openAll.length}개)`;
+  const cmt = $("#copyMdTop"); if (cmt) cmt.textContent = `채팅용 메모 복사 (${openAll.length}개)`;
+  const head = document.querySelector(".c-notes h3 span");
+  if (head) head.textContent = `씬 디자인 수정 메모 (${notes.length}개)`;
+}
+
+async function copyText(str, okMsg) {
+  try {
+    await navigator.clipboard.writeText(str);
+    toast(okMsg);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = str; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast(okMsg); } catch (err) { toast("복사에 실패했어요. 직접 선택해 복사해 주세요."); }
+    ta.remove();
+  }
+}
+
+function copyMarkdown() {
+  copyText(buildMarkdown(), "채팅용 메모를 복사했어요! 그대로 붙여넣으세요.");
+}
+
+function copyShareLink() {
+  const payload = encodeState(state);
+  const url = `${location.origin}${location.pathname}${location.search}#s=${payload}`;
+  copyText(url, "메모 포함 링크를 복사했어요! PC/폰에서 열면 동기화됩니다.");
+}
+
+function syncTimeUI(t) {
+  const f = frameOf(t);
+  const c = cutAtTime(t);
+  $("#nowT").textContent = fmt(t);
+  $("#nowF").textContent = "f" + f;
+  $("#hudBadge").textContent = `${c.id.toUpperCase()} · f${String(f).padStart(4, "0")} · ${c.set}`;
+
+  const ln = lineAtTime(t);
+  if (ln) {
+    $("#subIdx").textContent = `대사 #${ln.i}/54`;
+    $("#subRange").textContent = `${fmt(ln.a)}–${fmt(ln.b)}`;
+    $("#subText").textContent = ln.txt;
+  } else {
+    $("#subIdx").textContent = `${c.id.toUpperCase()} · ${c.short}`;
+    $("#subRange").textContent = fmt(t);
+    $("#subText").textContent = "(대사 사이 쉼 / SFX 구간)";
+  }
+  document.querySelectorAll(".dialogBtn").forEach((b) => {
+    b.classList.toggle("active", !!(ln && +b.dataset.lidx === ln.i));
+  });
+
+  const idx = slotAt(DATA.shots, t);
+  document.querySelectorAll(".frame").forEach((el) => {
+    const on = +el.dataset.i === idx;
+    const was = el.classList.contains("cur");
+    el.classList.toggle("cur", on);
+    const parent = el.parentElement;
+    if (on && !was && parent && parent.scrollWidth > parent.clientWidth) {
+      parent.scrollLeft = el.offsetLeft - parent.offsetLeft - (parent.clientWidth - el.offsetWidth) / 2;
+    }
+  });
+}
+
+function seek(t, updateInput = true) {
+  t = Math.max(0, Math.min(DATA.len - 0.01, +t || 0));
+  const v = $("#vid");
+  if (v) {
+    if (v.readyState < 1) {
+      v.addEventListener("loadedmetadata", () => { v.currentTime = t; }, { once: true });
+      v.load();
+    } else {
+      try { v.currentTime = t; } catch (e) {}
+    }
+  }
+  if (updateInput && $("#tin") && document.activeElement !== $("#tin")) {
+    $("#tin").value = fmt(t);
+    updateNoteFormTag();
+  }
+  syncTimeUI(t);
+}
+
+function step(deltaSec) {
+  const v = $("#vid");
+  if (!v) return;
+  v.pause();
+  seek(v.currentTime + deltaSec);
+}
+
+function toggleLoop() {
+  loopCut = !loopCut;
+  const b1 = $("#btnLoop");
+  if (b1) { b1.classList.toggle("on", loopCut); b1.setAttribute("aria-pressed", loopCut); }
+  const b2 = $("#loopCutBtn");
+  if (b2) { b2.classList.toggle("on", loopCut); b2.textContent = loopCut ? "컷 반복 중" : "이 컷 반복"; }
+  const c = DATA.cuts.find((x) => x.id === curTab) || cutAtTime($("#vid")?.currentTime || 0);
+  toast(loopCut ? `${c.id.toUpperCase()} 구간 반복 켜짐` : "구간 반복 꺼짐");
+}
+
+function openTab(id, autoSeek = true) {
+  if (!TAB_IDS.includes(id)) return;
+  curTab = id;
+  showAllShotsInCut = false;
+  showAllNotesInCut = false;
+  try { localStorage.setItem(STORAGE_KEY + "-tab", curTab); } catch (e) {}
+  renderTabs();
+  renderRail();
+  const c = DATA.cuts.find((x) => x.id === curTab);
+  if (autoSeek && c) seek(c.t0);
+}
+
+function init() {
+  loadState();
+  renderSummary();
+  renderTabs();
+  renderRail();
+
+  const v = $("#vid");
+  v.addEventListener("timeupdate", () => {
+    if (loopCut) {
+      const c = DATA.cuts.find((x) => x.id === curTab) || cutAtTime(v.currentTime);
+      if (v.currentTime >= c.t1 - 0.04) { v.currentTime = c.t0; }
+    }
+    syncTimeUI(v.currentTime);
+  });
+  v.addEventListener("play", () => { $("#btnPlay").textContent = "❚❚"; });
+  v.addEventListener("pause", () => {
+    $("#btnPlay").textContent = "▶";
+    if ($("#tin") && document.activeElement !== $("#tin")) {
+      $("#tin").value = fmt(v.currentTime);
+      updateNoteFormTag();
+    }
+  });
+
+  $("#btnBack1s").addEventListener("click", () => step(-1));
+  $("#btnBack1f").addEventListener("click", () => step(-1 / DATA.fps));
+  $("#btnPlay").addEventListener("click", () => { if (v.paused) v.play().catch(() => {}); else v.pause(); });
+  $("#btnFwd1f").addEventListener("click", () => step(1 / DATA.fps));
+  $("#btnFwd1s").addEventListener("click", () => step(1));
+  $("#btnLoop").addEventListener("click", toggleLoop);
+  $("#btnRate").addEventListener("click", () => {
+    rateIdx = (rateIdx + 1) % RATES.length;
+    v.playbackRate = RATES[rateIdx];
+    $("#btnRate").textContent = RATES[rateIdx] + "x";
+  });
+
+  $("#sizeBtn").addEventListener("click", (ev) => {
+    bigPlayer = !bigPlayer;
+    $("#player").classList.toggle("big", bigPlayer);
+    ev.currentTarget.textContent = bigPlayer ? "작게 보기" : "크게 보기";
+    ev.currentTarget.setAttribute("aria-pressed", bigPlayer);
+  });
+
+  $("#tabs").addEventListener("click", (ev) => {
+    const b = ev.target.closest(".tab");
+    if (b) openTab(b.dataset.tab, true);
+  });
+  $("#cutSel").addEventListener("change", (ev) => openTab(ev.target.value, true));
+  $("#cutPrev").addEventListener("click", () => {
+    const i = TAB_IDS.indexOf(curTab);
+    if (i > 0) openTab(TAB_IDS[i - 1], true);
+  });
+  $("#cutNext").addEventListener("click", () => {
+    const i = TAB_IDS.indexOf(curTab);
+    if (i < TAB_IDS.length - 1) openTab(TAB_IDS[i + 1], true);
+  });
+
+  $("#importFile").addEventListener("change", async (ev) => {
+    const file = ev.target.files?.[0];
+    if (!file) return;
+    try {
+      const obj = JSON.parse(await file.text());
+      if (obj.verdicts) Object.assign(state.verdicts, obj.verdicts);
+      const ids = new Set(state.notes.map((x) => x.id));
+      let added = 0;
+      (obj.notes || []).forEach((n) => {
+        if (n && n.id && !ids.has(n.id)) { state.notes.push(n); added++; }
+      });
+      saveState();
+      renderSummary();
+      renderTabs();
+      renderRail();
+      toast(`JSON에서 메모 ${added}개를 불러왔어요.`);
+    } catch (err) {
+      toast("JSON 파일을 읽지 못했어요.");
+    }
+    ev.target.value = "";
+  });
+
+  window.addEventListener("keydown", (ev) => {
+    const tag = document.activeElement?.tagName;
+    if (tag === "TEXTAREA" || tag === "INPUT" || tag === "SELECT") return;
+    if (ev.code === "Space") { ev.preventDefault(); if (v.paused) v.play().catch(() => {}); else v.pause(); }
+    else if (ev.key === "ArrowLeft") { ev.preventDefault(); step(ev.shiftKey ? -1 : -1 / DATA.fps); }
+    else if (ev.key === "ArrowRight") { ev.preventDefault(); step(ev.shiftKey ? 1 : 1 / DATA.fps); }
+    else if (ev.key === "[") { const i = TAB_IDS.indexOf(curTab); if (i > 0) openTab(TAB_IDS[i - 1], true); }
+    else if (ev.key === "]") { const i = TAB_IDS.indexOf(curTab); if (i < TAB_IDS.length - 1) openTab(TAB_IDS[i + 1], true); }
+    else if (ev.key === "l" || ev.key === "L") { toggleLoop(); }
+    else if (ev.key === "n" || ev.key === "N") { ev.preventDefault(); $("#tin").value = fmt(v.currentTime); updateNoteFormTag(); $("#txt")?.focus(); }
+  });
+
+  const c0 = DATA.cuts.find((x) => x.id === curTab);
+  if (c0) syncTimeUI(c0.t0); else syncTimeUI(0);
+}
+
+init();
+</script>
+</body>
+</html>
