@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>9화 Bank Foreclosure 대본 검수표 · Draft 6.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root {
+  --bg: #EEF2F1; --panel: #FFFFFF; --ink: #1B2624; --muted: #5E6E6A; --line: #D3DDDA;
+  --accent: #2C8C80; --accent-ink: #FFFFFF; --ok: #2F7D45; --warn: #B07A10; --bad: #B9402F;
+  --ok-bg: #E2F1E6; --warn-bg: #F7EDD6; --bad-bg: #F6E1DD; --chip: #E3EAE8;
+  --display: "Do Hyeon", "IBM Plex Sans KR", system-ui, sans-serif;
+  --body: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121817; --panel: #1A2321; --ink: #E6EEEC; --muted: #93A5A0; --line: #2B3835;
+  --accent: #4FB3A6; --accent-ink: #0D1514; --ok: #6CC287; --warn: #E0AE4A; --bad: #EE7F6E;
+  --ok-bg: #1D3326; --warn-bg: #3A2F17; --bad-bg: #3D211D; --chip: #24302D; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121817; --panel: #1A2321; --ink: #E6EEEC; --muted: #93A5A0; --line: #2B3835;
+  --accent: #4FB3A6; --accent-ink: #0D1514; --ok: #6CC287; --warn: #E0AE4A; --bad: #EE7F6E;
+  --ok-bg: #1D3326; --warn-bg: #3A2F17; --bad-bg: #3D211D; --chip: #24302D; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--body); margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 48px }
+.wrap { max-width: 1000px; margin: 0 auto; display: grid; gap: 16px }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 10px 16px }
+h1 { font: 32px/1.1 var(--display); margin: 0; text-wrap: balance }
+.sub { color: var(--muted); margin: 4px 0 0; font-size: 14px }
+.summary { display: flex; gap: 6px; flex-wrap: wrap; align-items: center }
+.pill { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--chip); white-space: nowrap; text-decoration: none; color: var(--ink) }
+.pill b { font-variant-numeric: tabular-nums }
+.pill.ok { background: var(--ok-bg); color: var(--ok) } .pill.warn { background: var(--warn-bg); color: var(--warn) }
+a.pill:hover { outline: 1px solid var(--accent) }
+.themeBtn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 4px 10px; font: 600 12px var(--body); cursor: pointer }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; display: grid; gap: 11px; min-width: 0 }
+h2 { font: 23px/1.25 var(--display); margin: 0 }
+h3 { font: 600 13px var(--body); letter-spacing: .04em; color: var(--muted); margin: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 12px; color: var(--muted); font-size: 13px }
+.meta b { color: var(--ink); font-weight: 600 }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px }
+.big { font: 54px/1 var(--display) } .big small { font: 20px var(--display); color: var(--muted) }
+.bar { height: 8px; border-radius: 99px; background: var(--chip); overflow: hidden } .bar i { display: block; height: 100% }
+.rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px }
+.rows li { display: grid; grid-template-columns: 84px 46px minmax(0, 1fr); gap: 4px 10px; align-items: center; font-size: 14px }
+.rows .nm { font-weight: 600 } .rows .sc { font: 500 13px var(--mono); text-align: right }
+.rows .why { grid-column: 1 / -1; color: var(--muted); font-size: 13px; margin-top: -2px }
+.lint { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px }
+.lint div { background: var(--chip); border-radius: 10px; padding: 8px 10px } .lint b { display: block; font: 600 18px var(--mono) } .lint span { font-size: 12px; color: var(--muted) }
+.actHead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px }
+.actScore { font: 34px/1 var(--display) } .actScore small { font: 15px var(--display); color: var(--muted) }
+.gw { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px }
+.gw ul { margin: 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 3px }
+.gw .g h4 { color: var(--ok) } .gw .w h4 { color: var(--warn) } h4 { margin: 0 0 3px; font: 600 12px var(--body) }
+.chk { font-size: 13px; color: var(--muted); background: var(--chip); border-radius: 9px; padding: 7px 10px }
+.lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px }
+.ln { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 7px 9px; border-radius: 9px; border: 1px solid transparent }
+.ln:hover { border-color: var(--line) } .ln.has { background: var(--warn-bg) }
+.ln .id { font: 500 12px var(--mono); color: var(--accent); padding-top: 2px } .ln .tx { font-size: 15.5px; line-height: 1.5 }
+.ln .tx .q { color: var(--accent) }
+.own { display: inline-block; font: 600 10.5px var(--body); padding: 0 6px; border-radius: 999px; background: var(--ok-bg); color: var(--ok); margin-left: 6px; vertical-align: 2px }
+.btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 9px; padding: 7px 12px; font: 600 13px var(--body); cursor: pointer }
+.btn:hover { border-color: var(--accent) } .btn.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+.btn.v-ok.on { background: var(--ok); border-color: var(--ok); color: var(--panel) } .btn.v-fix.on { background: var(--warn); border-color: var(--warn); color: var(--panel) }
+.btn.sm { padding: 3px 9px; font-size: 12px; border-radius: 8px }
+.decide { display: flex; flex-wrap: wrap; gap: 7px; align-items: center }
+.composer { display: grid; gap: 8px; padding: 10px; border: 1px dashed var(--line); border-radius: 10px; grid-column: 1 / -1 }
+.cats { display: flex; flex-wrap: wrap; gap: 6px }
+.catBtn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 3px 10px; font: 600 12px var(--body); cursor: pointer }
+.catBtn.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+textarea { width: 100%; min-height: 60px; resize: vertical; font: 15px/1.5 var(--body); padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink) }
+.notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
+.note { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line) }
+.note.done { opacity: .55 } .note.done .txt { text-decoration: line-through }
+.note .tt { font: 500 12px var(--mono); color: var(--accent); background: var(--chip); border-radius: 7px; padding: 3px 7px }
+.note .cat { display: inline-block; font: 600 11px var(--body); padding: 1px 7px; border-radius: 999px; background: var(--chip); color: var(--muted); margin-bottom: 2px }
+.note .txt { white-space: pre-wrap; word-break: break-word; font-size: 14px } .note .acts { display: flex; gap: 5px }
+.titles { display: grid; gap: 6px } .titles .btn { text-align: left; font-size: 15px }
+.empty { color: var(--muted); font-size: 14px }
+details summary { cursor: pointer; font-weight: 600; font-size: 14px } details ul { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 3px }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--panel); padding: 9px 15px; border-radius: 999px; font: 600 13px var(--body); opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 40 }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0) }
+.btn:focus-visible, .catBtn:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+@media (max-width: 760px) {
+  h1 { font-size: 22px } .sub { font-size: 13px } .grid2, .gw { grid-template-columns: minmax(0, 1fr) }
+  .ln { grid-template-columns: 36px minmax(0, 1fr) } .ln .lnAct { grid-column: 1 / -1; justify-self: end }
+  .btn { min-height: 40px } .btn.sm { min-height: 34px } .note { grid-template-columns: auto minmax(0, 1fr) } .note .acts { grid-column: 1 / -1; justify-content: flex-end }
+  textarea { font-size: 16px }
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const DATA = {"id": "script-film9-bank-d62", "film": "9화 Bank Foreclosure", "draft": "Draft 6.2", "writer": "Gemini 4 Neon Extra (xhigh) · 대표 수정 2줄", "checked_by": "Claude Opus 5.5 (검사·채점만)", "date": "2026-11-28", "source": "Andy Jiang GaaLU5C7P2Q · They Got The PERFECT Revenge On This Bank · 8.24M views · 8.1% likes", "lint": {"words": 543, "sec237": 137, "sec225": 145, "spoken_sec": 141, "fk": 3.1, "avg": 9.2, "short": "39%", "dialogue": "28%", "fail": 0, "warn": 0}, "story_total": 86, "story_rows": [{"name": "훅", "max": 15, "score": 13, "why": "첫 문장에 경찰·이사 트럭·'합법'이 다 들어감. 집이 걸렸다는 건 셋째 줄에서야 나옴."}, {"name": "걸린 것", "max": 15, "score": 11, "why": "현금으로 산 집이 걸려 있지만 마지막 금액이 5,772달러로 작음 (원재료 한계)."}, {"name": "중반 밀도", "max": 20, "score": 16, "why": "부엌 식탁 명령서 장면과 '은행 가구를 진짜 가져갈 수 있다고?'가 중반을 살림. 18개월·5개월은 여전히 요약."}, {"name": "악역과 저항", "max": 15, "score": 14, "why": "'경찰 부를 거예요' → 경찰 등장 반전, 세 번 버티다 본사 대기에 걸려 무너짐."}, {"name": "결말", "max": 15, "score": 14, "why": "거울 대사 + 같은 대기음 + '두 배 넘게' 펀치 + 의자 농담. 금액이 작아 1점 감점."}, {"name": "개연성", "max": 10, "score": 9, "why": "지점 권한, 변호사 거절 이유, 법원 명령 출처, 경찰 등장 순서까지 막힘. 1시간 대기는 살짝 긺."}, {"name": "제작", "max": 10, "score": 9, "why": "세트 3개(집·지점·법정), 대사 인물 4명, 텍스트 소품 5개. 로비 엑스트라가 추가됨."}], "acts": [{"id": "act1", "name": "1막 · 초반부", "time": "0:00 ~ 0:39", "score": 88, "good": ["첫 문장 하나로 그림·호기심·'합법' 훅 완성", "\"I'm like, missed what payments?\" / \"Yeah, no.\" 같은 사람 리액션", "지점장의 \"밀린 돈 갚든지, 아니면 집 가져갑니다\"가 실제 은행 말이자 3막 거울 복선"], "weak": ["\"to legally take\"가 살짝 딱딱함", "$165,000은 녹음 때 숫자 읽기 확인 필요"], "check": "Neon: 문/봉투 헷갈림 수정, '지점에서는 못 바꿔요' 추가. Opus 재검사: 통과.", "lines": [{"id": "L01", "text": "I walked into a bank with two cops and a moving truck to legally take the manager's desk.", "owner": false}, {"id": "L02", "text": "Let me back up a little over two years.", "owner": false}, {"id": "L03", "text": "My wife and I bought our house straight from a big bank for $165,000 in cash. No loan, all ours.", "owner": false}, {"id": "L04", "text": "Four months later, a guy knocks on our door and hands me a thick envelope from the bank.", "owner": false}, {"id": "L05", "text": "My wife rips it open. Right at the top it says we missed payments and they're taking our house.", "owner": false}, {"id": "L06", "text": "I'm like, missed what payments? We don't even have a loan.", "owner": false}, {"id": "L07", "text": "Next morning, I throw on my red hoodie, grab our bank receipt, and drive to our local branch.", "owner": false}, {"id": "L08", "text": "Easy five-minute fix, right? Yeah, no.", "owner": false}, {"id": "L09", "text": "The manager barely looks at it. He clicks his mouse and goes, \"My screen says you're behind. Local branches can't change that.\"", "owner": false}, {"id": "L10", "text": "\"Bring your payments up to date, or we take the house. Call the main office.\"", "owner": false}], "words": 156}, {"id": "act2", "name": "2막 · 중반부", "time": "0:39 ~ 1:20", "score": 81, "good": ["대기음 복선 (3막에서 그대로 돌아옴)", "부엌 식탁 명령서 + 주인공의 놀란 반응", "대표 수정: 'Five months later, they still ignore every call and letter.'"], "weak": ["18개월·5개월 시간 점프는 원재료상 요약으로 남음", "변호사의 법 설명 대사에 화자 표시가 없음"], "check": "Neon: 변호사 25명 거절 이유, 주어 명확화, 명령서 출처('다시 법원에') 추가. Opus 재검사: 통과, 요약 3연속 없음.", "lines": [{"id": "L11", "text": "So I call the main office dozens of times for a month.", "owner": false}, {"id": "L12", "text": "Nothing but awful hold music before they transfer me or hang up.", "owner": false}, {"id": "L13", "text": "Meanwhile they're still coming for our house. Twenty-five law firms turn us down because nobody wants to fight a bank that big.", "owner": false}, {"id": "L14", "text": "Finally, a young lawyer looks at our receipt and goes, \"Wait, you paid cash? I'm in.\"", "owner": false}, {"id": "L15", "text": "The bank drags it out eighteen months, then suddenly drops the case.", "owner": false}, {"id": "L16", "text": "The judge isn't having it. He orders them to pay about twenty-five hundred bucks for our lawyer bills.", "owner": false}, {"id": "L17", "text": "Five months later, they still ignore every call and letter.", "owner": true}, {"id": "L18", "text": "So our lawyer goes back to court and puts a signed order on our kitchen table.", "owner": false}, {"id": "L19", "text": "\"If someone won't pay what a judge ordered, the law lets cops walk in and take their stuff.\"", "owner": false}, {"id": "L20", "text": "Wait, we can actually take a bank's furniture?", "owner": false}, {"id": "L21", "text": "\"Meet me at the branch Friday morning,\" he says. \"I'm bringing cops and a moving truck.\"", "owner": false}], "words": 160}, {"id": "act3", "name": "3막 · 후반부", "time": "1:20 ~ 2:17", "score": 88, "good": ["'경찰 부를 거예요' 직후 경찰 등장", "\"Sure. Bring your payments up to date, or we take the desk.\" 거울 대사", "같은 대기음이 로비에 울림 + '두 배 넘게' 펀치"], "weak": ["\"plus cops, movers, and truck\" 관사 빠져 뚝뚝 끊김", "\"unplugs his computer and rolls in a moving cart\" 순서가 살짝 어색"], "check": "Neon 6.1: 두 배 펀치, 다큐 각주 삭제, 시제 통일. 대표 수정: 'I put the check in my pocket and walk out.' Opus 재검사: 통과.", "lines": [{"id": "L22", "text": "Friday morning, the truck pulls up.", "owner": false}, {"id": "L23", "text": "I walk in with my wife, our lawyer, and movers.", "owner": false}, {"id": "L24", "text": "The same manager spots me and laughs. \"You can't bring movers in here. Leave before I call the police.\"", "owner": false}, {"id": "L25", "text": "I step aside as two cops walk in and hand him the signed order.", "owner": false}, {"id": "L26", "text": "One cop says, \"Pay now, or they take desks, computers, filing cabinets, and cash.\"", "owner": false}, {"id": "L27", "text": "He still argues. \"This is a mistake! I can't pay without approval! Nobody touch anything!\"", "owner": false}, {"id": "L28", "text": "Our lawyer points to his office. \"Start with his desk and the chair he sits in.\"", "owner": false}, {"id": "L29", "text": "A mover unplugs his computer and rolls in a moving cart.", "owner": false}, {"id": "L30", "text": "Customers start filming.", "owner": false}, {"id": "L31", "text": "The manager yells, \"Stop! Let me call the main office!\"", "owner": false}, {"id": "L32", "text": "I go, \"Sure. Bring your payments up to date, or we take the desk.\"", "owner": false}, {"id": "L33", "text": "He dials on speakerphone and gets put on hold.", "owner": false}, {"id": "L34", "text": "That same awful hold music fills the lobby while a mover lifts his monitor.", "owner": false}, {"id": "L35", "text": "Within an hour, his bosses answer and tell him to pay before anything goes out the door.", "owner": false}, {"id": "L36", "text": "He hands us a check for $5,772.88, more than double the twenty-five hundred they owed.", "owner": false}, {"id": "L37", "text": "Because they stalled, they're paying our lawyer bills plus cops, movers, and truck.", "owner": false}, {"id": "L38", "text": "I put the check in my pocket and walk out.", "owner": true}, {"id": "L39", "text": "Kinda wish they'd left him on hold five more minutes. My chair at home was falling apart.", "owner": false}], "words": 227}], "owner_edited": ["Five months later, they still ignore every call and letter.", "I put the check in my pocket and walk out."], "titles": ["Bank Wanted My House, I Took Theirs 🚚", "Why I Brought Movers to a Bank 📦", "How I Legally Took a Bank's Stuff 💼"], "facts": ["현금 16.5만 달러로 은행에서 직접 구입, 대출 0", "약 4개월 뒤 '연체' 압류 통지, 밀린 돈 갚으라는 답", "로펌 25곳 거절, 젊은 변호사가 맡음", "18개월 뒤 은행이 소송 포기, 변호사비 약 2,534달러 판결", "5개월째 미지급, 전화·편지 무시", "법원 집행 명령 → 금요일 아침 경찰 2명·이사 인부·트럭과 지점 방문", "1시간 안에 5,772.88달러 수표, 가구는 하나도 안 나감 (CBS · CBC · Naples Daily News, 2011)"], "bridges": ["주인공(빨간 후드)이 집주인 자리, 아내와 함께 (실제로는 아내와 변호사가 방문)", "1막에서 같은 지점장과 대면", "본사 대기음: 1막 주인공 → 3막 지점장 (실제: 상부와 통화)", "손님들 촬영, 모니터 들기"]};
+const STORAGE_KEY = "hood-" + DATA.id + "-state";
+const THEME_KEY = "hood-review-theme";
+const CATS = ["말투", "개연성", "사실", "길이·속도", "기타"];
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let state = { verdicts: {}, notes: [], title: null };
+let openLine = null, curCat = CATS[0];
+function applyTheme(t) { if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t); else document.documentElement.removeAttribute("data-theme"); }
+try { applyTheme(localStorage.getItem(THEME_KEY)); } catch (e) {}
+let tt = null;
+function toast(m) { const el = $("#toast"); el.textContent = m; el.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => el.classList.remove("show"), 2400); }
+function enc(o) { const b = new TextEncoder().encode(JSON.stringify(o)); let s = ""; b.forEach((x) => s += String.fromCharCode(x)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function dec(s) { const p = s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4); const bin = atob(p); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return JSON.parse(new TextDecoder().decode(u)); }
+function load() {
+  try { const r = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); if (r) state = Object.assign(state, r); } catch (e) {}
+  const h = location.hash.slice(1);
+  if (h.startsWith("s=")) { try { const inc = dec(h.slice(2)); const ids = new Set(state.notes.map((n) => n.id)); let a = 0;
+    (inc.notes || []).forEach((n) => { if (n && n.id && !ids.has(n.id)) { state.notes.push(n); a++; } });
+    Object.assign(state.verdicts, inc.verdicts || {}); if (inc.title != null) state.title = inc.title; save();
+    history.replaceState(null, "", location.pathname); setTimeout(() => toast(a ? `링크에서 메모 ${a}개를 불러왔어요.` : "링크의 검수 상태를 불러왔어요."), 250); } catch (e) {} }
+}
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
+const allLines = DATA.acts.flatMap((a) => a.lines.map((l) => ({ ...l, act: a.id })));
+const lineById = (id) => allLines.find((l) => l.id === id);
+const color = (p) => p >= 0.85 ? "var(--ok)" : p >= 0.7 ? "var(--warn)" : "var(--bad)";
+function hl(t) { return esc(t).replace(/&quot;(.*?)&quot;/g, '<span class="q">&quot;$1&quot;</span>'); }
+
+function render() {
+  const L = DATA.lint, open = state.notes.filter((n) => !n.done).length;
+  const okN = DATA.acts.filter((a) => state.verdicts[a.id] === "ok").length, fixN = DATA.acts.filter((a) => state.verdicts[a.id] === "fix").length;
+  const dark = document.documentElement.getAttribute("data-theme") === "dark" || (!document.documentElement.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+  let h = `<header><div><h1>${esc(DATA.film)} 대본 검수표</h1>
+    <p class="sub">${esc(DATA.draft)} · 작성 ${esc(DATA.writer)} · 검사 ${esc(DATA.checked_by)} · ${esc(DATA.date)}<br>원본: ${esc(DATA.source)}</p></div>
+    <div class="summary"><a class="pill" href="./">← WebGL 검수표</a><span class="pill ok">통과 <b>${okN}</b>/3</span><span class="pill warn">수정 <b>${fixN}</b></span><span class="pill">열린 메모 <b>${open}</b></span>
+    <button class="themeBtn" id="theme">${dark ? "라이트" : "다크"}</button></div></header>`;
+  h += `<section class="grid2"><div class="card"><h3>스토리 점수 (100점 채점표)</h3><div class="big">${DATA.story_total}<small> / 100 · 기준 85</small></div>
+    <ul class="rows">${DATA.story_rows.map((r) => `<li><span class="nm">${esc(r.name)}</span><span class="sc">${r.score}/${r.max}</span>
+      <div class="bar"><i style="width:${r.score / r.max * 100}%;background:${color(r.score / r.max)}"></i></div><span class="why">${esc(r.why)}</span></li>`).join("")}</ul></div>
+    <div class="card"><h3>자동 검사 (lint)</h3><div class="lint">
+      <div><b>${L.words}</b><span>단어</span></div><div><b>~${Math.floor(L.spoken_sec / 60)}:${String(L.spoken_sec % 60).padStart(2, "0")}</b><span>실제 낭독 (237 wpm)</span></div>
+      <div><b>${L.fk}</b><span>FK 난이도 (2.5–4.0)</span></div><div><b>${L.avg}</b><span>문장당 단어</span></div>
+      <div><b>${L.short}</b><span>짧은 문장</span></div><div><b>${L.dialogue}</b><span>대사 줄</span></div>
+      <div><b style="color:var(--ok)">${L.fail}</b><span>FAIL</span></div><div><b style="color:var(--ok)">${L.warn}</b><span>WARN</span></div></div>
+      <h3>막별 점수</h3><ul class="rows">${DATA.acts.map((a) => `<li><span class="nm">${esc(a.name.split(" · ")[0])}</span><span class="sc">${a.score}</span><div class="bar"><i style="width:${a.score}%;background:${color(a.score / 100)}"></i></div></li>`).join("")}</ul>
+      <h3>제목 고르기</h3><div class="titles">${DATA.titles.map((t, i) => `<button class="btn ${state.title === i ? "on" : ""}" data-title="${i}">${i + 1}. ${esc(t)}${i === 0 ? "  (Neon 추천)" : ""}</button>`).join("")}</div></div></section>`;
+  DATA.acts.forEach((a) => {
+    const v = state.verdicts[a.id];
+    h += `<section class="card" id="${a.id}"><div class="actHead"><div><h2>${esc(a.name)}</h2><div class="meta"><span>${esc(a.time)}</span><span><b>${a.words}</b> 단어</span></div></div>
+      <div class="actScore">${a.score}<small> / 100</small></div></div>
+      <div class="gw"><div class="g"><h4>좋은 점</h4><ul>${a.good.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div><div class="w"><h4>약점</h4><ul>${a.weak.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div></div>
+      <div class="chk">3막 검사 · ${esc(a.check)}</div>
+      <ol class="lines">${a.lines.map((l) => {
+        const ns = state.notes.filter((n) => n.line === l.id && !n.done).length;
+        let row = `<li class="ln ${ns ? "has" : ""}"><span class="id">${l.id}</span><span class="tx">${hl(l.text)}${l.owner ? '<span class="own">대표 수정</span>' : ""}</span>
+          <span class="lnAct"><button class="btn sm" data-note="${l.id}">${ns ? "메모 " + ns : "메모"}</button></span>`;
+        if (openLine === l.id) row += `<div class="composer"><div class="cats">${CATS.map((c) => `<button class="catBtn ${c === curCat ? "on" : ""}" data-cat="${c}">${c}</button>`).join("")}</div>
+          <textarea id="ntext" placeholder="${l.id}에 대한 메모 (예: 이 줄 더 자연스럽게)"></textarea><div class="decide"><button class="btn on" id="nsave">저장</button><button class="btn" id="ncancel">닫기</button></div></div>`;
+        return row + `</li>`; }).join("")}</ol>
+      <div class="decide"><button class="btn v-ok ${v === "ok" ? "on" : ""}" data-v="${a.id}:ok">이 막 통과</button><button class="btn v-fix ${v === "fix" ? "on" : ""}" data-v="${a.id}:fix">수정 필요</button></div></section>`;
+  });
+  const notes = state.notes.slice().sort((x, y) => x.line.localeCompare(y.line));
+  h += `<section class="card"><h3>메모 <span class="decide"><button class="btn sm on" id="copyMd">채팅용 복사 (${open}개)</button><button class="btn sm" id="copyLink">공유 링크</button></span></h3>
+    ${notes.length ? `<ul class="notes">${notes.map((n) => `<li class="note ${n.done ? "done" : ""}"><span class="tt">${n.line}</span><div><span class="cat">${esc(n.cat)}</span><div class="txt">${esc(n.text)}</div></div>
+      <span class="acts"><button class="btn sm" data-done="${n.id}">${n.done ? "되돌리기" : "완료"}</button><button class="btn sm" data-del="${n.id}">삭제</button></span></li>`).join("")}</ul>` : `<p class="empty">줄 옆의 [메모]를 눌러 남겨 주세요. 브라우저에 자동 저장되고, 끝나면 [채팅용 복사]로 한 번에 보내시면 됩니다.</p>`}</section>`;
+  h += `<section class="card"><details><summary>실화 팩트 (원본 그대로 쓴 것)</summary><ul>${DATA.facts.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details>
+    <details><summary>지어낸 연결 장면</summary><ul>${DATA.bridges.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details></section>`;
+  $("#app").innerHTML = h;
+  bind();
+}
+function bind() {
+  $("#theme").onclick = () => { const d = document.documentElement.getAttribute("data-theme") === "dark" || (!document.documentElement.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    const n = d ? "light" : "dark"; applyTheme(n); try { localStorage.setItem(THEME_KEY, n); } catch (e) {} render(); };
+  document.querySelectorAll("[data-title]").forEach((b) => b.onclick = () => { const i = +b.dataset.title; state.title = state.title === i ? null : i; save(); render(); });
+  document.querySelectorAll("[data-v]").forEach((b) => b.onclick = () => { const [a, v] = b.dataset.v.split(":"); state.verdicts[a] = state.verdicts[a] === v ? undefined : v; save(); render(); });
+  document.querySelectorAll("[data-note]").forEach((b) => b.onclick = () => { openLine = openLine === b.dataset.note ? null : b.dataset.note; render(); setTimeout(() => $("#ntext")?.focus(), 30); });
+  document.querySelectorAll("[data-cat]").forEach((b) => b.onclick = () => { curCat = b.dataset.cat; const t = $("#ntext").value; render(); $("#ntext").value = t; $("#ntext").focus(); });
+  const ns = $("#nsave"); if (ns) ns.onclick = () => { const t = $("#ntext").value.trim(); if (!t) { toast("메모 내용을 적어 주세요."); return; }
+    state.notes.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), line: openLine, cat: curCat, text: t, done: false }); openLine = null; save(); render(); toast("메모를 저장했어요."); };
+  const nc = $("#ncancel"); if (nc) nc.onclick = () => { openLine = null; render(); };
+  document.querySelectorAll("[data-done]").forEach((b) => b.onclick = () => { const n = state.notes.find((x) => x.id === b.dataset.done); n.done = !n.done; save(); render(); });
+  document.querySelectorAll("[data-del]").forEach((b) => b.onclick = () => { state.notes = state.notes.filter((x) => x.id !== b.dataset.del); save(); render(); });
+  $("#copyMd").onclick = () => copy(md(), "채팅용 메모를 복사했어요! 그대로 붙여넣으세요.");
+  $("#copyLink").onclick = () => copy(`${location.origin}${location.pathname}#s=${enc(state)}`, "공유 링크를 복사했어요.");
+}
+function md() {
+  const out = [`[${DATA.film} 대본 검수 · ${DATA.draft}]`];
+  DATA.acts.forEach((a) => { const v = state.verdicts[a.id]; out.push(`- ${a.name}: ${v === "ok" ? "통과" : v === "fix" ? "수정 필요" : "미정"}`); });
+  if (state.title != null) out.push(`- 제목: ${state.title + 1}번 ${DATA.titles[state.title]}`);
+  const open = state.notes.filter((n) => !n.done);
+  if (open.length) { out.push("", "메모:"); open.sort((x, y) => x.line.localeCompare(y.line)).forEach((n) => { const l = lineById(n.line); out.push(`- ${n.line} [${n.cat}] "${l ? l.text : ""}" → ${n.text}`); }); }
+  return out.join("\n");
+}
+async function copy(s, m) { try { await navigator.clipboard.writeText(s); toast(m); } catch (e) { const t = document.createElement("textarea"); t.value = s; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); toast(m); } }
+load(); render();
+</script>
+</body>
+</html>
